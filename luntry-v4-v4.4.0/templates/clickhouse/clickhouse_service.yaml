@@ -1,0 +1,31 @@
+{{- if .Values.clickhouse.enabled -}}
+{{- if or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main")) -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-clickhouse
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-clickhouse
+    {{- include "common.labels" . | nindent 4 }}
+  {{- if .Values.clickhouse.serviceAnnotations }}
+  annotations:
+    {{- toYaml .Values.clickhouse.serviceAnnotations | nindent 4 }}
+  {{- end }}
+spec:
+  type: ClusterIP
+  sessionAffinity: None
+  ports:
+    - name: http
+      targetPort: http
+      port: 8123
+      protocol: TCP
+    - name: tcp
+      targetPort: tcp
+      port: 9000
+      protocol: TCP
+  selector:
+    app.kubernetes.io/component: {{ .Release.Name }}-clickhouse
+{{- end }}
+{{- end }}

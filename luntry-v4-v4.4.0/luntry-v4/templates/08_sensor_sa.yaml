@@ -1,0 +1,43 @@
+{{- if .Values.sensor.serviceAccount.create -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ quote (default (printf "%s-%s" .Release.Name "sensor") .Values.sensor.serviceAccount.name) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-sensor
+    {{- include "common.labels" . | nindent 4 }}
+
+{{- if .Values.openShift.compatibility.sensorPrivilegedScc }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ .Release.Name }}-sensor
+  namespace: {{ .Release.Namespace }}
+rules:
+- apiGroups:
+  - security.openshift.io
+  resourceNames:
+  - privileged
+  resources:
+  - securitycontextconstraints
+  verbs:
+  - use
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ .Release.Name }}-sensor
+  namespace: {{ .Release.Namespace }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ quote (default (printf "%s-%s" .Release.Name "sensor") .Values.sensor.serviceAccount.name) }}
+roleRef:
+  kind: Role
+  name: {{ .Release.Name }}-sensor
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}
+{{- end }}

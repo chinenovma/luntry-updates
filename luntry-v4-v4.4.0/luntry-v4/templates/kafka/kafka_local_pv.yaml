@@ -1,0 +1,30 @@
+{{- if and (.Values.kafka.pv.enabled) (.Values.kafka.enabled) (not .Values.kafka.pvc.emptyDir) -}}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-kafka
+  namespace: {{ .Release.Namespace }}
+  labels:
+    type: local
+  annotations:
+    pv.beta.kubernetes.io/gid: {{ .Values.kafka.podSecurityContext.fsGroup | quote }}
+spec:
+  {{- if or .Values.kafka.pv.storageClass.create .Values.kafka.pv.storageClass.name }}
+  storageClassName: {{ .Values.kafka.pv.storageClass.name | default (printf "%s-local-storage" .Release.Name) }}
+  {{- end }}
+  persistentVolumeReclaimPolicy: {{ .Values.kafka.pv.reclaimPolicy | default "Recycle" }}
+  capacity:
+    storage: {{ .Values.kafka.pvc.size }}
+  volumeMode: Filesystem
+  accessModes:
+    - {{ .Values.kafka.pvc.accessMode }}
+  local:
+    path: {{ .Values.kafka.pv.localPath }}
+{{- with .Values.kafka.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms }}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- end }}

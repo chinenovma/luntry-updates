@@ -1,0 +1,62 @@
+{{- if .Values.visualizer.ingress.enabled -}}
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" -}}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-visualizer-ingress
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-visualizer-ingress
+    {{- include "common.labels" . | nindent 4 }}
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  {{- if .Values.visualizer.ingress.tls.enabled }}
+  tls:
+  - hosts:
+      - {{ .Values.visualizer.ingress.domainName }}
+    secretName: {{ .Values.visualizer.ingress.tls.secretName }}
+  {{- end }}
+  ingressClassName: {{ .Values.visualizer.ingress.ingressClassName }}
+  rules:
+  - host: {{ (.Values.visualizer.ingress.domainName | default "viz.luntry") | quote }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}-visualizer
+            port:
+              number: 80
+{{- else if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1/Ingress" -}}
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-visualizer-ingress
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-visualizer-ingress
+    {{- include "common.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.visualizer.ingress.ingressClassName }}
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+spec:
+  {{- if .Values.visualizer.ingress.tls.enabled }}
+  tls:
+  - hosts:
+      - {{ .Values.visualizer.ingress.domainName }}
+    secretName: {{ .Values.visualizer.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+  - host: {{ (.Values.visualizer.ingress.domainName | default "viz.luntry") | quote }}
+    http:
+      paths:
+      - backend:
+          serviceName: {{ .Release.Name }}-visualizer
+          servicePort: 80
+{{- end }}
+{{- end }}

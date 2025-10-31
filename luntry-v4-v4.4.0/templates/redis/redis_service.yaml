@@ -1,0 +1,24 @@
+{{- if .Values.redis.enabled -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-redis
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-redis
+    {{- include "common.labels" . | nindent 4 }}
+  {{- if .Values.redis.serviceAnnotations }}
+  annotations:
+    {{- toYaml .Values.redis.serviceAnnotations | nindent 4 }}
+  {{- end }}
+spec:
+  type: ClusterIP
+  sessionAffinity: None
+  ports:
+  - name: tcp-redis
+    port: 6379
+    targetPort: redis
+  selector:
+    app.kubernetes.io/component: {{ .Release.Name }}-redis
+{{- end }}

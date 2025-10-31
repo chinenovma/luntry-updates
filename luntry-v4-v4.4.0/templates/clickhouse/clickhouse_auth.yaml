@@ -1,0 +1,17 @@
+{{- if or .Values.clickhouse.enabled (and (not .Values.databaseConnectionConfiguration.clickhouse.customSecret.secretName) (not .Values.databaseConnectionConfiguration.clickhouse.bankVaultsInjector.enabled)) -}}
+{{- if or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main")) -}}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-clickhouse-auth
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-clickhouse-auth
+    {{- include "common.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  CLICKHOUSE_USER: {{ .Values.databaseConnectionConfiguration.clickhouse.username | default "luntry" | quote }}
+  CLICKHOUSE_PASSWORD: {{ .Values.databaseConnectionConfiguration.clickhouse.password | default "q49WZCYRN8yaJo4u" | quote }}
+{{- end }}
+{{- end }}

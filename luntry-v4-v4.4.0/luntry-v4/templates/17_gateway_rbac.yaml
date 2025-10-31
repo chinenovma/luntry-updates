@@ -1,0 +1,13 @@
+{{- if and (.Values.gateway.enabled) (.Values.gateway.serviceAccount.create) -}}
+{{- if or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main")) -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ quote (default (printf "%s-%s" .Release.Name "gateway") .Values.gateway.serviceAccount.name) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-gateway
+    {{- include "common.labels" . | nindent 4 }}
+{{- end }}
+{{- end }}

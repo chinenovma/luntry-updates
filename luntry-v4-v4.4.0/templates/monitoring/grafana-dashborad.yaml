@@ -1,0 +1,11 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.grafana.enabled -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-grafana-dashboard
+  namespace: {{ .Release.Namespace }}
+data:
+  luntry_performance.json: |
+{{ .Files.Get "files/dashboard.json" | indent 4 }}
+{{- end -}}

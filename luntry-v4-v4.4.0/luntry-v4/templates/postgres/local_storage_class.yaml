@@ -1,0 +1,11 @@
+{{- if or (and .Values.postgres.pv.storageClass.create .Values.postgres.pv.enabled) (and .Values.monitoring.prometheus.pv.storageClass.create .Values.monitoring.prometheus.pv.enabled) (and .Values.monitoring.grafana.pv.storageClass.create .Values.monitoring.grafana.pv.enabled) (and .Values.kafka.pv.storageClass.create .Values.kafka.pv.enabled) (and .Values.clickhouse.pv.storageClass.create .Values.clickhouse.pv.enabled) (and .Values.redis.pv.storageClass.create .Values.redis.pv.enabled) -}}
+{{- if not (lookup "storage.k8s.io/v1" "StorageClass" .Release.Namespace (printf "%s-local-storage" .Release.Name)) -}}
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .Release.Name }}-local-storage
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+{{- end }}
+{{- end }}

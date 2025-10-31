@@ -1,0 +1,13 @@
+{{- if and (.Values.clickhouse.enabled) (.Values.clickhouse.serviceAccount.create) -}}
+{{- if or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main")) -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ quote (default (printf "%s-%s" .Release.Name "clickhouse") .Values.clickhouse.serviceAccount.name) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-clickhouse
+    {{- include "common.labels" . | nindent 4 }}
+{{- end }}
+{{- end }}

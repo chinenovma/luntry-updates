@@ -1,0 +1,23 @@
+{{- $db := .Values.databaseConnectionConfiguration.kafka }}
+{{- if or $db.password (and (not $db.password) (not $db.bankVaultsInjector.enabled) (not $db.customSecret.secretName)) }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-kafka-auth
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-kafka-auth
+    {{- include "common.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  KAFKA_CLIENT_USER: {{ $db.username | default "luntry" | quote }}
+  KAFKA_CLIENT_PASSWORD: {{ $db.password | default "1A5nzldlz1psgwcG" | quote }}
+  {{- if .Values.kafka.enabled }}
+  KAFKA_INTER_BROKER_USER: {{ .Values.develop.kafka.credentials.broker.username | quote }}
+  KAFKA_INTER_BROKER_PASSWORD: {{ .Values.develop.kafka.credentials.broker.password | quote }}
+  KAFKA_CONTROLLER_USER: {{ .Values.develop.kafka.credentials.controller.username | quote }}
+  KAFKA_CONTROLLER_PASSWORD: {{ .Values.develop.kafka.credentials.controller.password | quote }}
+  {{- end }}
+{{- else }}
+{{- end }}

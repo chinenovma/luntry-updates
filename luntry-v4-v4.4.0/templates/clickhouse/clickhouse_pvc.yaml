@@ -1,0 +1,29 @@
+{{- if and (.Values.clickhouse.enabled) (eq .Values.clickhouse.pvc.type "pvc") -}}
+{{- if or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main")) -}}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-clickhouse
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-clickhouse
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+{{- if or .Values.clickhouse.pvc.storageClass .Values.clickhouse.pv.enabled }}
+{{- if .Values.clickhouse.pvc.storageClass }}
+  storageClassName: {{ .Values.clickhouse.pvc.storageClass | quote }}
+{{- else if and .Values.clickhouse.pv.enabled  (not .Values.clickhouse.pv.storageClass.create) .Values.clickhouse.pv.storageClass.name }}
+  storageClassName: {{ .Values.clickhouse.pv.storageClass.name | quote }}
+{{- else if and .Values.clickhouse.pv.enabled  .Values.clickhouse.pv.storageClass.create (not .Values.clickhouse.pv.storageClass.name) }}
+  storageClassName: {{ .Release.Name }}-local-storage
+  volumeName: {{ .Release.Name }}-clickhouse
+{{- end }}
+{{- end }}
+  accessModes:
+    - {{ .Values.clickhouse.pvc.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.clickhouse.pvc.size }}
+{{- end }}
+{{- end }}

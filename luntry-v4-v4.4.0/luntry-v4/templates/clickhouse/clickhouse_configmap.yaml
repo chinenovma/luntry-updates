@@ -1,0 +1,63 @@
+{{- if .Values.clickhouse.enabled -}}
+{{- if or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main")) -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-clickhouse-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-clickhouse-config
+    {{- include "common.labels" . | nindent 4 }}
+data:
+  00_default_overrides.xml: |
+    <clickhouse>
+      <!-- Macros -->
+      <macros>
+        <shard from_env="CLICKHOUSE_SHARD_ID"></shard>
+        <replica from_env="CLICKHOUSE_REPLICA_ID"></replica>
+        <layer>click-clickhouse</layer>
+      </macros>
+      <!-- Log Level -->
+      <logger>
+        <level>information</level>
+        <console>true</console>
+        <log remove="remove"/>
+        <errorlog remove="remove"/>
+      </logger>
+      <listen_host>0.0.0.0</listen_host>
+      <listen_try>1</listen_try>
+      <mysql_port remove="1" />
+      <postgresql_port remove="1" />
+
+      <asynchronous_metric_log remove="1"/>
+      <backup_log remove="1"/>
+      <error_log remove="1"/>
+      <metric_log remove="1"/>
+      <query_metric_log remove="1"/>
+      <query_thread_log remove="1" />
+      <query_log remove="1" />
+      <query_views_log remove="1" />
+      <part_log remove="1"/>
+      <session_log remove="1"/>
+      <text_log remove="1" />
+      <trace_log remove="1"/>
+      <crash_log remove="1"/>
+      <opentelemetry_span_log remove="1"/>
+      <zookeeper_log remove="1"/>
+      <processors_profile_log remove="1"/>
+      <latency_log remove="1"/>
+
+      {{- if or .Values.clickhouse.prometheus.enabled .Values.monitoring.enabled }}
+      <prometheus>
+        <endpoint>/metrics</endpoint>
+        <port>8080</port>
+        <metrics>true</metrics>
+        <events>true</events>
+        <asynchronous_metrics>true</asynchronous_metrics>
+      </prometheus>
+      {{- end }}
+      <max_server_memory_usage_to_ram_ratio>0.8</max_server_memory_usage_to_ram_ratio>
+    </clickhouse>
+{{- end }}
+{{- end }}

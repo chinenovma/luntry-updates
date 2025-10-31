@@ -1,0 +1,27 @@
+{{- if and (.Values.kafka.enabled) (eq .Values.kafka.pvc.type "pvc") -}}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-kafka
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-kafka
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+{{- if or .Values.kafka.pvc.storageClass .Values.kafka.pv.enabled }}
+{{- if .Values.kafka.pvc.storageClass }}
+  storageClassName: {{ .Values.kafka.pvc.storageClass | quote }}
+{{- else if and .Values.kafka.pv.enabled  (not .Values.kafka.pv.storageClass.create) .Values.kafka.pv.storageClass.name }}
+  storageClassName: {{ .Values.kafka.pv.storageClass.name | quote }}
+{{- else if and .Values.kafka.pv.enabled  .Values.kafka.pv.storageClass.create (not .Values.kafka.pv.storageClass.name) }}
+  storageClassName: {{ .Release.Name }}-local-storage
+  volumeName: {{ .Release.Name }}-kafka
+{{- end }}
+{{- end }}
+  accessModes:
+    - {{ .Values.kafka.pvc.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.kafka.pvc.size }}
+{{- end }}

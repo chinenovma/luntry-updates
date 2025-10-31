@@ -1,0 +1,27 @@
+{{- if and (.Values.redis.enabled) (eq .Values.redis.pvc.type "pvc") -}}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-redis
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-redis
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+{{- if or .Values.redis.pvc.storageClass .Values.redis.pv.enabled }}
+{{- if .Values.redis.pvc.storageClass }}
+  storageClassName: {{ .Values.redis.pvc.storageClass | quote }}
+{{- else if and .Values.redis.pv.enabled  (not .Values.redis.pv.storageClass.create) .Values.redis.pv.storageClass.name }}
+  storageClassName: {{ .Values.redis.pv.storageClass.name | quote }}
+{{- else if and .Values.redis.pv.enabled  .Values.redis.pv.storageClass.create (not .Values.redis.pv.storageClass.name) }}
+  storageClassName: {{ .Release.Name }}-local-storage
+  volumeName: {{ .Release.Name }}-redis
+{{- end }}
+{{- end }}
+  accessModes:
+    - {{ .Values.redis.pvc.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.redis.pvc.size }}
+{{- end }}

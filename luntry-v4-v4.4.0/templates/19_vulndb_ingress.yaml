@@ -1,0 +1,62 @@
+{{- if and (.Values.vulndb.enabled) (.Values.vulndb.ingress.enabled) -}}
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" -}}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-vulndb-ingress
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-vulndb-ingress
+    {{- include "common.labels" . | nindent 4 }}
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  {{- if .Values.vulndb.ingress.tls.enabled }}
+  tls:
+  - hosts:
+      - {{ .Values.vulndb.ingress.domainName }}
+    secretName: {{ .Values.vulndb.ingress.tls.secretName }}
+  {{- end }}
+  ingressClassName: {{ .Values.vulndb.ingress.ingressClassName }}
+  rules:
+  - host: {{ (.Values.vulndb.ingress.domainName | default "vulndb.luntry") | quote }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}-vulndb
+            port:
+              number: 8080
+{{- else if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1/Ingress" -}}
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-vulndb-ingress
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-vulndb-ingress
+    {{- include "common.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.vulndb.ingress.ingressClassName }}
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+spec:
+  {{- if .Values.vulndb.ingress.tls.enabled }}
+  tls:
+  - hosts:
+      - {{ .Values.vulndb.ingress.domainName }}
+    secretName: {{ .Values.vulndb.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+  - host: {{ (.Values.vulndb.ingress.domainName | default "vulndb.luntry") | quote }}
+    http:
+      paths:
+      - backend:
+          serviceName: {{ .Release.Name }}-vulndb
+          servicePort: 8080
+{{- end }}
+{{- end }}

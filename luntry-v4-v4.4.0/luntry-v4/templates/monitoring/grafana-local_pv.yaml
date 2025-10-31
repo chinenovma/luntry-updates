@@ -1,0 +1,30 @@
+{{- if and (.Values.monitoring.grafana.pv.enabled) (.Values.monitoring.grafana.enabled) (not .Values.monitoring.grafana.pvc.emptyDir) }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-grafana
+  namespace: {{ .Release.Namespace }}
+  labels:
+    type: local
+  annotations:
+    pv.beta.kubernetes.io/gid: {{ .Values.monitoring.grafana.podSecurityContext.fsGroup | quote }}
+spec:
+  {{- if or .Values.monitoring.grafana.pv.storageClass.create .Values.monitoring.grafana.pv.storageClass.name }}
+  storageClassName: {{ .Values.monitoring.grafana.pv.storageClass.name | default (printf "%s-local-storage" .Release.Name) }}
+  {{- end }}
+  persistentVolumeReclaimPolicy: {{ .Values.monitoring.grafana.pv.reclaimPolicy | default "Recycle" }}
+  capacity:
+    storage: {{ .Values.monitoring.grafana.pvc.size }}
+  volumeMode: Filesystem
+  accessModes:
+    - {{ .Values.monitoring.grafana.pvc.accessMode }}
+  local:
+    path: {{ .Values.monitoring.grafana.pv.localPath }}
+{{- with .Values.monitoring.grafana.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms }}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- end }}

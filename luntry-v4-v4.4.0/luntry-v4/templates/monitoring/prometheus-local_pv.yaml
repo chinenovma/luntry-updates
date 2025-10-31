@@ -1,0 +1,30 @@
+{{- if and (.Values.monitoring.prometheus.pv.enabled) (.Values.monitoring.prometheus.enabled) (not .Values.monitoring.prometheus.pvc.emptyDir) -}}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-prometheus
+  namespace: {{ .Release.Namespace }}
+  labels:
+    type: local
+  annotations:
+    pv.beta.kubernetes.io/gid: {{ .Values.monitoring.prometheus.podSecurityContext.fsGroup | quote }}
+spec:
+  {{- if or .Values.monitoring.prometheus.pv.storageClass.create .Values.monitoring.prometheus.pv.storageClass.name }}
+  storageClassName: {{ .Values.monitoring.prometheus.pv.storageClass.name | default (printf "%s-local-storage" .Release.Name) }}
+  {{- end }}
+  persistentVolumeReclaimPolicy: {{ .Values.monitoring.prometheus.pv.reclaimPolicy | default "Recycle" }}
+  capacity:
+    storage: {{ .Values.monitoring.prometheus.pvc.size }}
+  volumeMode: Filesystem
+  accessModes:
+    - {{ .Values.monitoring.prometheus.pvc.accessMode }}
+  local:
+    path: {{ .Values.monitoring.prometheus.pv.localPath }}
+{{- with .Values.monitoring.prometheus.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms }}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- end }}

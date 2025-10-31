@@ -1,0 +1,11 @@
+{{- if and (.Values.linker.enabled) (.Values.linker.serviceAccount.create) -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ quote (default (printf "%s-%s" .Release.Name "linker") .Values.linker.serviceAccount.name) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-linker
+    {{- include "common.labels" . | nindent 4 }}
+{{- end }}

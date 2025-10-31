@@ -1,0 +1,4245 @@
+# yaml-language-server: $schema=values.schema.json
+
+imageCredentials:
+  # -- (bool) Создание imagePullSecret
+  # @section -- imagePullSecret
+  create: true
+  # -- (string) Название секрета
+  # @section -- imagePullSecret
+  secretName: ""
+  # -- (string) Доменное имя или адрес локального registry
+  # @section -- imagePullSecret
+  registry: registry.luntry.com
+  # -- (string) Имя репозитория или проекта в registry
+  # @section -- imagePullSecret
+  repository: luntry
+  # -- (string) Имя пользователя для доступа к registry
+  # @section -- imagePullSecret
+  username: ""
+  # -- (string) Пароль пользователя
+  # @section -- imagePullSecret
+  password: ""
+  # @schema
+  # format: idn-email
+  # @schema
+  # -- (string) Email
+  # @section -- imagePullSecret
+  email: robot@luntry.com
+
+# -- (string) Глобальный тэг для образов, используется если не задан "service.image.tag"
+allTag: v4.4.0
+
+# @schema
+# examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+# @schema
+# -- (string) Глобальный пресет ресурсов
+globalResourcesPreset: none
+
+# -- (string) Лицензия в формате Base64, также можно добавить позже в GUI
+licenseKey: ""
+
+openShift:
+  compatibility:
+    # -- (bool) Адаптирует SecurityContext ресурсов для Openshift (удаляет поля runAsUser, runAsGroup, fsGroup)
+    # @section -- Openshift compatibility
+    adaptSecurityContext: false
+    # -- (bool) Изменяет init скрипт контейнера Clickhouse для работы с кастомным UID
+    # @section -- Openshift compatibility
+    clickhouseInitFix: false
+    # -- (bool) Автоматически назначает SCC privileged для SA luntry-sensor
+    # "sensor.serviceAccount.create" должен быть включен
+    # @section -- Openshift compatibility
+    sensorPrivilegedScc: false
+    # -- (bool) Автоматически назначает SCC privileged для SA luntry-compliance
+    # "complianceOperator.serviceAccount.create" должен быть включен
+    # @section -- Openshift compatibility
+    compliancePrivilegedScc: false
+    # -- (bool) Использование CIS Openshift Benchmark
+    # @section -- Openshift compatibility
+    complianceCisBenchmark: false
+    # -- (bool) Создает новый SCC с именем luntry-privileged и назначает его на SA luntry-sensor и luntry-compliance
+    # @section -- Openshift compatibility
+    customPrivilegedScc: false
+
+databaseConnectionConfiguration:
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Аннотации для добавления в Deployment сервисов, которые используют БД
+  # @section -- databaseConnectionConfiguration
+  bankVaultsInjectorAnnotations: {}
+  clickhouse:
+    # -- (string) Адрес сервера
+    # @default -- "ReleaseName-clickhouse.ReleaseNamespace"
+    # @section -- databaseConnectionConfiguration
+    host: ""
+    # -- (string) HTTP порт
+    # @default -- 8123
+    # @section -- databaseConnectionConfiguration
+    portHTTP: ""
+    # -- (string) TCP порт
+    # @default -- 9000
+    # @section -- databaseConnectionConfiguration
+    portTCP: ""
+    # -- (string) Имя БД
+    # @default -- luntry
+    # @section -- databaseConnectionConfiguration
+    dbName: ""
+    # -- (string) Имя пользователя БД
+    # @default -- collector
+    # @section -- databaseConnectionConfiguration
+    username: ""
+    # -- (string) Пароль пользователя БД
+    # @default -- 123QWEasd
+    # @section -- databaseConnectionConfiguration
+    password: ""
+    customSecret:
+      # -- (string) Имя существующего секрета
+      # @section -- databaseConnectionConfiguration
+      secretName: ""
+      # -- (string) Ключ содержащий имя учётной записи
+      # @section -- databaseConnectionConfiguration
+      userKey: ""
+      # -- (string) Ключ содержащий пароль учётной записи
+      # @section -- databaseConnectionConfiguration
+      passwordKey: ""
+    bankVaultsInjector:
+      # -- (bool) Включение использования [Bank-Vaults Secret injection webhook](https://bank-vaults.dev/docs/mutating-webhook/)
+      # @section -- databaseConnectionConfiguration
+      enabled: false
+      # -- (string) Ключ содержащий имя учётной записи
+      # @section -- databaseConnectionConfiguration
+      userKey: ""
+      # -- (string) Ключ содержащий пароль учётной записи
+      # @section -- databaseConnectionConfiguration
+      passwordKey: ""
+  kafka:
+    # -- (string) Адрес сервера
+    # @default -- "ReleaseName-kafka.ReleaseNamespace"
+    # @section -- databaseConnectionConfiguration
+    host: ""
+    # -- (string) Порт
+    # @default -- 9092
+    # @section -- databaseConnectionConfiguration
+    port: ""
+    # -- (string) Имя пользователя БД
+    # @default -- luntry
+    # @section -- databaseConnectionConfiguration
+    username: ""
+    # -- (string) Пароль пользователя БД
+    # @default -- 1A5nzldlz1psgwcG
+    # @section -- databaseConnectionConfiguration
+    password: ""
+    # -- Механизм аутентификации SCRAM-SHA-256, SCRAM-SHA-512 или "" для PLAIN
+    # @section -- databaseConnectionConfiguration
+    authMechanism: ""
+    ssl:
+      # -- (bool) Включает использование SSL для подключения к БД
+      # @section -- databaseConnectionConfiguration
+      enabled: false
+      # -- (bool) Пропускать верификацию SSL сертификата
+      # @section -- databaseConnectionConfiguration
+      skipVerify: false
+      ca:
+        # -- (string) СА цепочка в Base64 формате
+        # @section -- databaseConnectionConfiguration
+        crtBase64: ""
+        # -- (string) Имя существующего секрета
+        # @section -- databaseConnectionConfiguration
+        secretName: ""
+        # -- (string) Ключ содержащий сертификат
+        # @section -- databaseConnectionConfiguration
+        secretKey: ""
+    customSecret:
+      # -- (string) Имя существующего секрета
+      # @section -- databaseConnectionConfiguration
+      secretName: ""
+      # -- (string) Ключ содержащий имя учётной записи
+      # @section -- databaseConnectionConfiguration
+      userKey: "KAFKA_CLIENT_USER"
+      # -- (string) Ключ содержащий пароль учётной записи
+      # @section -- databaseConnectionConfiguration
+      passwordKey: "KAFKA_CLIENT_PASSWORD"
+      # -- (string) Ключ содержащий имя учётной записи
+      # @section -- databaseConnectionConfiguration
+      interBrokerUserKey: "KAFKA_INTER_BROKER_USER"
+      # -- (string) Ключ содержащий пароль учётной записи
+      # @section -- databaseConnectionConfiguration
+      interBrokerPasswordKey: "KAFKA_INTER_BROKER_PASSWORD"
+      # -- (string) Ключ содержащий имя учётной записи
+      # @section -- databaseConnectionConfiguration
+      controllerUserKey: "KAFKA_CONTROLLER_USER"
+      # -- (string) Ключ содержащий пароль учётной записи
+      # @section -- databaseConnectionConfiguration
+      controllerPasswordKey: "KAFKA_CONTROLLER_PASSWORD"
+    bankVaultsInjector:
+      # -- (bool) Включение использования [Bank-Vaults Secret injection webhook](https://bank-vaults.dev/docs/mutating-webhook/)
+      # @section -- databaseConnectionConfiguration
+      enabled: false
+      # -- (string) Ключ содержащий имя учётной записи
+      # @section -- databaseConnectionConfiguration
+      userKey: ""
+      # -- (string) Ключ содержащий пароль учётной записи
+      # @section -- databaseConnectionConfiguration
+      passwordKey: ""
+      # -- (string) Ключ содержащий имя учётной записи
+      # @section -- databaseConnectionConfiguration
+      interBrokerUserKey: ""
+      # -- (string) Ключ содержащий пароль учётной записи
+      # @section -- databaseConnectionConfiguration
+      interBrokerPasswordKey: ""
+      # -- (string) Ключ содержащий имя учётной записи
+      # @section -- databaseConnectionConfiguration
+      controllerUserKey: ""
+      # -- (string) Ключ содержащий пароль учётной записи
+      # @section -- databaseConnectionConfiguration
+      controllerPasswordKey: ""
+  postgres:
+    # -- (string) Адрес сервера
+    # @default -- "ReleaseName-postgres.ReleaseNamespace"
+    # @section -- databaseConnectionConfiguration
+    host: ""
+    # -- (string) Порт
+    # @default -- 5432
+    # @section -- databaseConnectionConfiguration
+    port: ""
+    # -- (string) Имя БД
+    # @section -- databaseConnectionConfiguration
+    dbName: collector
+    # -- (string) Имя схемы БД
+    # @section -- databaseConnectionConfiguration
+    schemaName: public
+    # -- (string) Имя пользователя БД
+    # @section -- databaseConnectionConfiguration
+    username: collector
+    # -- (string) Пароль пользователя БД
+    # @section -- databaseConnectionConfiguration
+    password: 123QWEasd
+    customSecret:
+      # -- (string) Имя существующего секрета
+      # @section -- databaseConnectionConfiguration
+      secretName: ""
+      # -- (string) Ключ содержащий имя учётной записи
+      # @section -- databaseConnectionConfiguration
+      userKey: ""
+      # -- (string) Ключ содержащий пароль учётной записи
+      # @section -- databaseConnectionConfiguration
+      passwordKey: ""
+    bankVaultsInjector:
+      # -- (bool) Включение использования [Bank-Vaults Secret injection webhook](https://bank-vaults.dev/docs/mutating-webhook/)
+      # @section -- databaseConnectionConfiguration
+      enabled: false
+      # -- (string) Ключ содержащий имя учётной записи
+      # @section -- databaseConnectionConfiguration
+      userKey: ""
+      # -- (string) Ключ содержащий пароль учётной записи
+      # @section -- databaseConnectionConfiguration
+      passwordKey: ""
+    tls:
+      # -- (bool) Включает использование TLS для подключения к БД
+      # @section -- databaseConnectionConfiguration
+      enabled: false
+      ca:
+        # -- (string) СА цепочка в Base64 формате
+        # @section -- databaseConnectionConfiguration
+        crtBase64: ""
+        # -- (string) Имя существующего секрета
+        # @section -- databaseConnectionConfiguration
+        secretName: ""
+        # -- (string) Ключ содержащий сертификат
+        # @section -- databaseConnectionConfiguration
+        secretKey: ""
+  redis:
+    # -- (string) Адрес сервера
+    # @default -- "ReleaseName-redis.ReleaseNamespace"
+    # @section -- databaseConnectionConfiguration
+    host: ""
+    # -- (string) Порт
+    # @default -- 6379
+    # @section -- databaseConnectionConfiguration
+    port: ""
+    # -- (string) Пароль пользователя БД
+    # @section -- databaseConnectionConfiguration
+    password: ""
+    customSecret:
+      # -- (string) Имя существующего секрета
+      # @section -- databaseConnectionConfiguration
+      secretName: ""
+      # -- (string) Ключ содержащий пароль учётной записи
+      # @section -- databaseConnectionConfiguration
+      passwordKey: ""
+    bankVaultsInjector:
+      # -- (bool) Включение использования [Bank-Vaults Secret injection webhook](https://bank-vaults.dev/docs/mutating-webhook/)
+      # @section -- databaseConnectionConfiguration
+      enabled: false
+      # -- (string) Ключ содержащий пароль учётной записи
+      # @section -- databaseConnectionConfiguration
+      passwordKey: ""
+
+policy:
+  # -- (bool) Включение автоматического обучения
+  # @section -- Параметры обучения
+  autoTraining: false
+  # -- (bool) Старт обучения только если видели старт контейнера в поде, работает только при включенном автообучении
+  # @section -- Параметры обучения
+  onlyFullLifecycle: false
+  # -- (int) Размер окна обучения в секундах
+  # @section -- Параметры обучения
+  trainingTime: 120
+  # -- (int) Интервал архивирования неактивных политик в секундах
+  # @section -- Параметры обучения
+  archiveTime: 86400
+  anomaliesEnabled:
+    # -- (bool) Отключает обработку файловых событий
+    # @section -- Параметры обучения
+    file: true
+    # -- (bool) Отключает обработку сетевых событий
+    # @section -- Параметры обучения
+    network: true
+    # -- (bool) Отключает обработку процессных событий
+    # @section -- Параметры обучения
+    process: true
+  # @schema
+  # examples: ["kube-*,test-*"]
+  # @schema
+  # -- (string) Список неймспейсов, разделенных запятыми, в которых отключено автообучение, работает только при включенном автообучении
+  # @section -- Параметры обучения
+  excludedNamespaces: ""
+
+proxy:
+  # -- (string) Адрес прокси сервера для HTTP запросов
+  # @section -- Прокси сервер
+  httpProxy: ""
+  # -- (string) Адрес прокси сервера для HTTPS запросов
+  # @section -- Прокси сервер
+  httpsProxy: ""
+  # @schema
+  # examples: ["10.96.0.1"]
+  # @schema
+  # -- (string) Лист имен и адресов, разделенных запятыми,которые не должны проксироваться. Допускаются *
+  # По умолчанию содержит: .cluster.local,.local,.%Release.Namespace%,%gatewayEndpoint%
+  # Данная переменная всегда должна включать адрес сервиса kubernetes.default в формате IP адреса
+  # @section -- Прокси сервер
+  noProxy: ""
+
+admin:
+  # -- (string) Имя пользователя для входа в веб-интерфейс
+  # @section -- Веб-интерфейс
+  user: luntry
+  # -- (string) Пароль пользователя для входа в веб-интерфейс
+  # @section -- Веб-интерфейс
+  password: luntry_pass
+  # -- (int) Время жизни сессии в часах
+  # @section -- Веб-интерфейс
+  idleLogoutTimeout: 1
+
+multicluster:
+  # -- (bool) Включение multicluster установки
+  # @section -- multicluster setup
+  enabled: false
+  # @schema
+  # enum:
+  # - main
+  # - secondary
+  # @schema
+  # -- Выбор multicluster роли
+  # @section -- multicluster setup
+  role: main
+  # -- (string) Имя кластера (имена всех кластеров должны быть уникальны)
+  # @section -- multicluster setup
+  clusterName: main
+  # -- (string) Описание кластера
+  # @section -- multicluster setup
+  clusterDescription: ""
+  exporter:
+    # -- (string) Адрес или доменное имя exporter в мастер-кластере
+    # @section -- multicluster setup
+    host: ""
+    # -- (string) Порт exporter в мастер-кластере
+    # @section -- multicluster setup
+    port: ""
+  gateway:
+    # -- (string) Адрес или доменное имя gateway в мастер-кластере
+    # @section -- multicluster setup
+    host: ""
+    # -- (string) Порт gateway в мастер-кластере
+    # @section -- multicluster setup
+    port: ""
+  cmdDispatcher:
+    # -- (string) Адрес или доменное имя cmdDispatcher в мастер-кластере
+    # @section -- multicluster setup
+    host: ""
+    # -- (string) Порт cmdDispatcher в мастер-кластере
+    # @section -- multicluster setup
+    port: ""
+
+caBundle:
+  # -- (string) СА цепочка в Base64 формате
+  # @section -- caBundle
+  crtBase64: ""
+  # -- (string) Имя существующего секрета, содержащего цепочку сертификатов
+  # @section -- caBundle
+  secretName: ""
+
+log:
+  # -- (string) Имя среды, будет добавлено в поле env json лога
+  # @section -- Logging
+  env: "PROD"
+  # @schema
+  # enum:
+  # - json
+  # - text
+  # @schema
+  # -- Формат лога
+  # @section -- Logging
+  format: "json"
+  # -- (string) Константные поля в json логе
+  # @section -- Logging
+  constFields: "env:@LOG_ENV,system:luntry,inst:@NODE_NAME,pod_name:@POD_NAME"
+  # -- (string) Позволяет изменить имена стандартных полей. Пример "time:@timestamp,msg:message,level:LEVEL,func:method,file:source"
+  # @section -- Logging
+  fieldMap: ""
+
+postgres:
+  # -- (bool) Включает деплой PostgreSQL вместе с Luntry. Только для тестирования в небольших кластерах!
+  # @section -- Postgres
+  enabled: false
+  # @schema
+  # enum:
+  # - deployment
+  # - statefulset
+  # @schema
+  # -- Тип развёртывания
+  # @section -- Postgres
+  mode: deployment
+  image:
+    # -- (string) Путь к registry с образом
+    # @section -- Postgres
+    registry: ""
+    # -- (string) Имя проекта и образа
+    # @section -- Postgres
+    name: luntry/3dparty/postgres
+    # -- (string) Тэг образа
+    # @section -- Postgres
+    tag: 14-trixie
+  pvc:
+    # @schema
+    # enum:
+    # - emptydir
+    # - genericEphemeralVolume
+    # - pvc
+    # @schema
+    # -- Тип хранилища
+    # @section -- Postgres
+    type: pvc
+    # -- (string) Имя существующего StorageClass
+    # @section -- Postgres
+    storageClass: ""
+    # -- (string) Размер хранилища
+    # @section -- Postgres
+    size: 50Gi
+    # -- (string) Режимы доступа к хранилищу
+    # @section -- Postgres
+    accessMode: ReadWriteOnce
+  pv:
+    # -- (bool) Включает создание local storage PV при установке
+    # @section -- Postgres
+    enabled: false
+    # -- (string) Путь на ноде для хранения данных PV (Путь должен быть предварительно создан на ноде)
+    # @section -- Postgres
+    localPath: /opt/luntry-postgres
+    storageClass:
+      # -- (bool) Создать local-only StorageClass при создании локального PV
+      # @section -- Postgres
+      create: false
+      # -- (string) Использовать существующий local-only StorageClass для локального PV
+      # @section -- Postgres
+      name: ""
+    # @schema
+    # enum:
+    # - Recycle
+    # - Retain
+    # - Delete
+    # @schema
+    # -- Политика переиспользования PV, для сохранения данных в случае удаления, используйте "Retain"
+    # @section -- Postgres
+    reclaimPolicy: Recycle
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- Postgres
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет задавать tolerations для компонентов
+  # @section -- Postgres
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+  # @section -- Postgres
+  affinity: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к сервисам
+  # @section -- Postgres
+  serviceAnnotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- Postgres
+  additionalEnvs: []
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- Postgres
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- Postgres
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+  service:
+    # @schema
+    # enum:
+    # - ClusterIP
+    # - NodePort
+    # - LoadBalancer
+    # @schema
+    # -- Тип kubernetes сервиса
+    # @section -- Postgres
+    type: ClusterIP
+  # -- (object) Container securityContext
+  # @section -- Postgres
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 999
+    allowPrivilegeEscalation: false
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- Postgres
+    create: false
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- Postgres
+    name: ""
+  # -- (object) Pod securityContext
+  # @section -- Postgres
+  podSecurityContext:
+    fsGroup: 999
+    fsGroupChangePolicy: Always
+
+charon:
+  # -- (bool) Включает деплой сервиса
+  # @section -- Charon
+  enabled: true
+  log:
+    # @schema
+    # enum:
+    # - trace
+    # - debug
+    # - info
+    # - warn
+    # - err
+    # @schema
+    # -- Уровень логирования
+    # @section -- Charon
+    logLevel: info
+  prometheus:
+    # -- (bool) Включает отображение prometheus метрик для сервиса
+    # @section -- Charon
+    enabled: false
+  profiling:
+    # -- (bool) Включает профилирование сервиса
+    # @section -- Charon
+    enabled: false
+  # -- (string) Интервал запуска проверки ресурсов
+  # @section -- Charon
+  cruiseIntervalDuration: 1m
+  # -- (string) Период неактивности после которого сенсор будет помечен как deleted
+  # @section -- Charon
+  sensorLastSeenToKillDuration: 30m
+  # -- (string) Период неактивности после которого нода будет помечен как deleted
+  # @section -- Charon
+  nodeLastSeenAtToRemoveDuration: 30m
+  # -- (string) Период неактивности после которого контейнеры будут помечены как deleted
+  # @section -- Charon
+  sensorLastSeenToKillContainerDuration: 1h
+
+  image:
+    # -- (string) Тэг образа
+    # @section -- Charon
+    tag: ""
+    # -- (string) Имя образа
+    # @section -- Charon
+    name: charon
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- Charon
+    pullPolicy: IfNotPresent
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к подам
+  # @section -- Charon
+  annotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- Charon
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Управляет назначением подов на ноды через механизм tolerations
+  # @section -- Charon
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+  # @section -- Charon
+  affinity: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- Charon
+  additionalEnvs: []
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- Charon
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- Charon
+  resources:
+    requests:
+      cpu: 50m
+      memory: 50Mi
+    limits:
+      cpu: 100m
+      memory: 100Mi
+  # -- (object) Container securityContext
+  # @section -- Charon
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    allowPrivilegeEscalation: false
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- Charon
+    create: false
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- Charon
+    name: ""
+  # -- (object) PodDisruptionBudget
+  # @section -- Charon
+  pdb:
+    enabled: false
+    minAvailable: 1
+
+checker:
+  # -- (bool) Включает деплой сервиса
+  # @section -- Checker
+  enabled: true
+  prometheus:
+    # -- (bool) Включает отображение prometheus метрик для сервиса
+    # @section -- Checker
+    enabled: false
+  profiling:
+    # -- (bool) Включает профилирование сервиса
+    # @section -- Checker
+    enabled: false
+
+  image:
+    # -- (string) Тэг образа
+    # @section -- Checker
+    tag: ""
+    # -- (string) Имя образа
+    # @section -- Checker
+    name: checker
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- Checker
+    pullPolicy: IfNotPresent
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к подам
+  # @section -- Checker
+  annotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к сервисам
+  # @section -- Checker
+  serviceAnnotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- Checker
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Управляет назначением подов на ноды через механизм tolerations
+  # @section -- Checker
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+  # @section -- Checker
+  affinity: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- Checker
+  additionalEnvs: []
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- Checker
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- Checker
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 1000m
+      memory: 500Mi
+  # -- (object) Container securityContext
+  # @section -- Checker
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    allowPrivilegeEscalation: false
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- Checker
+    create: false
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- Checker
+    name: ""
+  # -- (object) PodDisruptionBudget
+  # @section -- Checker
+  pdb:
+    enabled: false
+    minAvailable: 1
+
+collector:
+  # -- (bool) Включает деплой сервиса
+  # @section -- Collector
+  enabled: true
+  log:
+    # @schema
+    # enum:
+    # - trace
+    # - debug
+    # - info
+    # - warn
+    # - err
+    # @schema
+    # -- Уровень логирования
+    # @section -- Collector
+    logLevel: info
+  prometheus:
+    # -- (bool) Включает отображение prometheus метрик для сервиса
+    # @section -- Collector
+    enabled: false
+  profiling:
+    # -- (bool) Включает профилирование сервиса
+    # @section -- Collector
+    enabled: false
+  # -- (int) Устанавливает максимальный размер одного сообщения передаваемое сервису gateway. Значение по умолчанию - 10Мб
+  # @section -- Collector
+  maxMsgSize: 10485760
+  # -- (int) Устанавливает размер локальной очереди событий ожидающих обработки
+  # @section -- Collector
+  pendingEventsLimit: 20000
+  fallbackBuffer:
+    # @schema
+    # enum:
+    # - kafka
+    # - local
+    # @schema
+    # --  Устанавливает тип фоллбэк буфера 
+    # @section -- Collector
+    type: local
+    local:
+      # -- (int) Максимальное количество файлов для локального буфера
+      # @section -- Collector
+      bufferSize: 100
+      # -- (int) Максимальное количество событий в одном файле
+      # @section -- Collector
+      eventsPerFile: 6000
+      # -- (int) Максимальный суммарный объем файлов в Мб, не должен превышать размера директории (collector.pvc.size=3Gi)
+      # @section -- Collector
+      memoryLimit: 2500
+
+  # -- (int) Количество реплик
+  # @section -- Collector
+  replicas: 2
+  image:
+    # -- (string) Тэг образа
+    # @section -- Collector
+    tag: ""
+    # -- (string) Имя образа
+    # @section -- Collector
+    name: gcollector
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- Collector
+    pullPolicy: IfNotPresent
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к подам
+  # @section -- Collector
+  annotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к сервисам
+  # @section -- Collector
+  serviceAnnotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- Collector
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Управляет назначением подов на ноды через механизм tolerations
+  # @section -- Collector
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- Collector
+  additionalEnvs: []
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- Collector
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- Collector
+  resources:
+    requests:
+      cpu: 200m
+      memory: 500Mi
+    limits:
+      cpu: 2000m
+      memory: 3Gi
+  # -- (object) PodDisruptionBudget
+  # @section -- Collector
+  pdb:
+    enabled: false
+    minAvailable: 50%
+  # -- (object) Horizontal Pod Autoscaler
+  # @section -- Collector
+  hpa:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 10
+    stabilizationWindow: 300
+    cpu:
+      avgUsage: 70
+    memory:
+      avgUsage: 70
+  pvc:
+    # @schema
+    # enum:
+    # - emptydir
+    # - genericEphemeralVolume
+    # @schema
+    # -- Тип хранилища
+    # @section -- Collector
+    type: emptydir
+    # -- (string) Имя существующего StorageClass
+    # @section -- Collector
+    storageClass: ""
+    # -- (string) Размер хранилища
+    # @section -- Collector
+    size: 3Gi
+    # -- (string) Режимы доступа к хранилищу
+    # @section -- Collector
+    accessMode: ReadWriteOnce
+  # -- (object) Container securityContext
+  # @section -- Collector
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    allowPrivilegeEscalation: false
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- Collector
+    create: false
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- Collector
+    name: ""
+
+clickhouse:
+  # -- (bool) Включает деплой сервиса
+  # @section -- Clickhouse
+  enabled: true
+  prometheus:
+    # -- (bool) Включает отображение prometheus метрик для сервиса
+    # @section -- Clickhouse
+    enabled: false
+
+  image:
+    # -- (string) Путь к registry с образом
+    # @section -- Clickhouse
+    registry: ""
+    # -- (string) Имя проекта и образа
+    # @section -- Clickhouse
+    name: luntry/3dparty/clickhouse-server
+    # -- (string) Тэг образа
+    # @section -- Clickhouse
+    tag: "25.9"
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- Clickhouse
+    pullPolicy: IfNotPresent
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к подам
+  # @section -- Clickhouse
+  annotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к сервисам
+  # @section -- Clickhouse
+  serviceAnnotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- Clickhouse
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Управляет назначением подов на ноды через механизм tolerations
+  # @section -- Clickhouse
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+  # @section -- Clickhouse
+  affinity: {}
+  # -- (object) Container securityContext
+  # @section -- Clickhouse
+  securityContext:
+    allowPrivilegeEscalation: false
+    runAsGroup: 1001
+    runAsNonRoot: true
+    runAsUser: 1001
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- Clickhouse
+    create: false
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- Clickhouse
+    name: ""
+  # -- (object) Pod securityContext
+  # @section -- Clickhouse
+  podSecurityContext:
+    fsGroup: 1001
+    fsGroupChangePolicy: Always
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- Clickhouse
+  additionalEnvs: []
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- Clickhouse
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- Clickhouse
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+  pvc:
+    # @schema
+    # enum:
+    # - emptydir
+    # - genericEphemeralVolume
+    # - pvc
+    # @schema
+    # -- Тип хранилища
+    # @section -- Clickhouse
+    type: pvc
+    # -- (string) Имя существующего StorageClass
+    # @section -- Clickhouse
+    storageClass: ""
+    # -- (string) Размер хранилища
+    # @section -- Clickhouse
+    size: 10Gi
+    # -- (string) Режимы доступа к хранилищу
+    # @section -- Clickhouse
+    accessMode: ReadWriteOnce
+  pv:
+    # -- (bool) Включает создание local storage PV при установке
+    # @section -- Clickhouse
+    enabled: false
+    # -- (string) Путь на ноде для хранения данных PV (Путь должен быть предварительно создан на ноде)
+    # @section -- Clickhouse
+    localPath: /opt/luntry-clickhouse
+    storageClass:
+      # -- (bool) Создать local-only StorageClass при создании локального PV
+      # @section -- Clickhouse
+      create: true
+      # -- (string) Использовать существующий local-only StorageClass для локального PV
+      # @section -- Clickhouse
+      name: ""
+    # @schema
+    # enum:
+    # - Recycle
+    # - Retain
+    # - Delete
+    # @schema
+    # -- Политика переиспользования PV, для сохранения данных в случае удаления, используйте "Retain"
+    # @section -- Clickhouse
+    reclaimPolicy: Recycle
+
+complianceOperator:
+  # -- (object) Включает деплой сервиса
+  # @section -- complianceOperator
+  mode:
+    # -- (bool) Включение установки Deployment Compliance Operator
+    # @section -- complianceOperator
+    cluster: true
+    # -- (bool) Включение установки DaemonSet Compliance Operator на мастер ноды кластера
+    # @section -- complianceOperator
+    masterNode: true
+    # -- (bool) Включение установки DaemonSet Compliance Operator на воркер ноды кластера
+    # @section -- complianceOperator
+    workerNode: true
+  log:
+    # @schema
+    # enum:
+    # - trace
+    # - debug
+    # - info
+    # - warn
+    # - err
+    # @schema
+    # -- Уровень логирования
+    # @section -- complianceOperator
+    logLevel: info
+  prometheus:
+    # -- (bool) Включает отображение prometheus метрик для сервиса
+    # @section -- complianceOperator
+    enabled: false
+  profiling:
+    # -- (bool) Включает профилирование сервиса
+    # @section -- complianceOperator
+    enabled: false
+  # -- (string) Интервал проведения проверок, данная переменная поддерживает стандартный cron синтаксис
+  # @section -- complianceOperator
+  cron: "0 4 * * *"
+  # -- (int) Ограничение на количество ресурсов, найденных в результате проверки. Используется для ограничения количества потребляемой памяти в больших средах
+  # @section -- complianceOperator
+  maxReportedResources: 0
+  benchmark:
+    # -- (string) При наличии нескольких версий бенчмарка, позволяет задать конкретную версию для проверки
+    # @section -- complianceOperator
+    name: cis
+    # -- (string) При наличии нескольких версий бенчмарка, позволяет задать конкретную версию для проверки
+    # @section -- complianceOperator
+    version: "1.10"
+  # @schema
+  # enum:
+  # - gateway
+  # - db
+  # @schema
+  # -- Задает способ сохранения SBOM отчета в luntry. Допустимые значения: ["gateway", "db"]
+  # @section -- complianceOperator
+  driver: gateway
+
+  image:
+    # -- (string) Тэг образа
+    # @section -- complianceOperator
+    tag: ""
+    # -- (string) Имя образа
+    # @section -- complianceOperator
+    name: compliance-operator
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- complianceOperator
+    pullPolicy: IfNotPresent
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к подам
+  # @section -- complianceOperator
+  annotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- complianceOperator
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Управляет назначением подов на ноды через механизм tolerations
+  # @section -- complianceOperator
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+  # @section -- complianceOperator
+  affinity: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- complianceOperator
+  additionalEnvs: []
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- complianceOperator
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- complianceOperator
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 500Mi
+  # -- (object) Container securityContext
+  # @section -- complianceOperator
+  securityContext:
+    capabilities:
+      drop:
+      - ALL
+    privileged: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 65532
+    allowPrivilegeEscalation: false
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- complianceOperator
+    create: false
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- complianceOperator
+    name: ""
+
+cmdDispatcher:
+  # -- (bool) Включает деплой сервиса
+  # @section -- cmd-Dispatcher
+  enabled: true
+  log:
+    # @schema
+    # enum:
+    # - trace
+    # - debug
+    # - info
+    # - warn
+    # - err
+    # @schema
+    # -- Уровень логирования
+    # @section -- cmd-Dispatcher
+    level: info
+  prometheus:
+    # -- (bool) Включает отображение prometheus метрик для сервиса
+    # @section -- cmd-Dispatcher
+    enabled: false
+  profiling:
+    # -- (bool) Включает профилирование сервиса
+    # @section -- cmd-Dispatcher
+    enabled: false
+  tls:
+    # -- (bool) Включает использование TLS между cmd-agent и cmd-dispatcher
+    # @section -- cmd-Dispatcher
+    enabled: false
+    crt:
+      # -- (string) Сертификат в Base64
+      # @section -- cmd-Dispatcher
+      crtBase64: ""
+      # -- (string) Ключ в Base64
+      # @section -- cmd-Dispatcher
+      keyBase64: ""
+      # -- (string) Существующий секрет типа kubernetes.io/tls, содержащий сертификат и ключ
+      # @section -- cmd-Dispatcher
+      secretName: ""
+    ca:
+      # -- (string) СА цепочка в Base64 формате
+      # @section -- cmd-Dispatcher
+      crtBase64: ""
+      # -- (string) Имя существующего секрета
+      # @section -- cmd-Dispatcher
+      secretName: ""
+      # -- (string) Ключ содержащий сертификат
+      # @section -- cmd-Dispatcher
+      secretKey: ""
+
+  image:
+    # -- (string) Тэг образа
+    # @section -- cmd-Dispatcher
+    tag: ""
+    # -- (string) Имя образа
+    # @section -- cmd-Dispatcher
+    name: cmd-dispatcher
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- cmd-Dispatcher
+    pullPolicy: IfNotPresent
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к подам
+  # @section -- cmd-Dispatcher
+  annotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к сервисам
+  # @section -- cmd-Dispatcher
+  serviceAnnotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- cmd-Dispatcher
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Управляет назначением подов на ноды через механизм tolerations
+  # @section -- cmd-Dispatcher
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+  # @section -- cmd-Dispatcher
+  affinity: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- cmd-Dispatcher
+  additionalEnvs: []
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- cmd-Dispatcher
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- cmd-Dispatcher
+  resources:
+    requests:
+      cpu: 200m
+      memory: 200Mi
+    limits:
+      cpu: 500m
+      memory: 500Mi
+  # -- (object) Container securityContext
+  # @section -- cmd-Dispatcher
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- cmd-Dispatcher
+    create: false
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- cmd-Dispatcher
+    name: ""
+  service:
+    # @schema
+    # enum:
+    # - ClusterIP
+    # - NodePort
+    # - LoadBalancer
+    # @schema
+    # -- Тип kubernetes сервиса
+    # @section -- cmd-Dispatcher
+    type: ClusterIP
+    # -- (string) Порт на ноде кластера k8s, на который будет смаплен порт сервиса cmdDispatcher. Используется только в случае если service.type=NodePort
+    # @section -- cmd-Dispatcher
+    nodePort: ""
+
+cmdAgent:
+  # -- (bool) Включает деплой сервиса
+  # @section -- cmdAgent
+  enabled: true
+  log:
+    # @schema
+    # enum:
+    # - trace
+    # - debug
+    # - info
+    # - warn
+    # - err
+    # @schema
+    # -- Уровень логирования
+    # @section -- cmdAgent
+    level: info
+  prometheus:
+    # -- (bool) Включает отображение prometheus метрик для сервиса
+    # @section -- cmdAgent
+    enabled: false
+  profiling:
+    # -- (bool) Включает профилирование сервиса
+    # @section -- cmdAgent
+    enabled: false
+
+  image:
+    # -- (string) Тэг образа
+    # @section -- cmdAgent
+    tag: ""
+    # -- (string) Имя образа
+    # @section -- cmdAgent
+    name: cmd-agent
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- cmdAgent
+    pullPolicy: IfNotPresent
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к подам
+  # @section -- cmdAgent
+  annotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к сервисам
+  # @section -- cmdAgent
+  serviceAnnotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- cmdAgent
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Управляет назначением подов на ноды через механизм tolerations
+  # @section -- cmdAgent
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+  # @section -- cmdAgent
+  affinity: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- cmdAgent
+  additionalEnvs: []
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- cmdAgent
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- cmdAgent
+  resources:
+    requests:
+      cpu: 200m
+      memory: 200Mi
+    limits:
+      cpu: 500m
+      memory: 500Mi
+  # -- (object) Container securityContext
+  # @section -- cmdAgent
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- cmdAgent
+    create: false
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- cmdAgent
+    name: ""
+
+dataProvider:
+  # -- (bool) Включает деплой сервиса
+  # @section -- Data-provider
+  enabled: true
+  log:
+    user:
+      # -- (bool) Логирование действий пользователей в Luntry
+      # @section -- Data-provider
+      enabled: false
+    db:
+      # -- (bool) Логирование запросов к БД
+      # @section -- Data-provider
+      enabled: false
+  timeout:
+    # -- (int) Задает период ожидания ответа от data-provider в миллисекундах
+    # @section -- Data-provider
+    acquire: 60000
+  node:
+    # -- (int) Задает максимальный размер для node.js heap в мегабайтах
+    # @section -- Data-provider
+    maxOldSpaceSize: 1536
+
+  image:
+    # -- (string) Тэг образа
+    # @section -- Data-provider
+    tag: ""
+    # -- (string) Имя образа
+    # @section -- Data-provider
+    name: data-provider
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- Data-provider
+    pullPolicy: IfNotPresent
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к подам
+  # @section -- Data-provider
+  annotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к сервисам
+  # @section -- Data-provider
+  serviceAnnotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- Data-provider
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Управляет назначением подов на ноды через механизм tolerations
+  # @section -- Data-provider
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+  # @section -- Data-provider
+  affinity: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- Data-provider
+  additionalEnvs: []
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- Data-provider
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- Data-provider
+  resources:
+    requests:
+      cpu: 500m
+      memory: 500Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+  # -- (object) Container securityContext
+  # @section -- Data-provider
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    allowPrivilegeEscalation: false
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- Data-provider
+    create: false
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- Data-provider
+    name: ""
+  # -- (object) PodDisruptionBudget
+  # @section -- Data-provider
+  pdb:
+    enabled: false
+    minAvailable: 1
+
+dbwait:
+  # -- (bool) Включает деплой сервиса
+  # @section -- DBwait
+  enabled: true
+  image:
+    # -- (string) Тэг образа
+    # @section -- DBwait
+    tag: ""
+    # -- (string) Имя образа
+    # @section -- DBwait
+    name: db-wait
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- DBwait
+    pullPolicy: IfNotPresent
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- DBwait
+  resources:
+    requests:
+      cpu: 10m
+      memory: 10Mi
+    limits:
+      cpu: 100m
+      memory: 100Mi
+  # -- (object) Container securityContext
+  # @section -- DBwait
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+
+exporter:
+  # -- (bool) Включает деплой сервиса
+  # @section -- Exporter
+  enabled: true
+  log:
+    # @schema
+    # enum:
+    # - trace
+    # - debug
+    # - info
+    # - warn
+    # - err
+    # @schema
+    # -- Уровень логирования
+    # @section -- Exporter
+    logLevel: info
+  prometheus:
+    # -- (bool) Включает отображение prometheus метрик для сервиса
+    # @section -- Exporter
+    enabled: false
+  tls:
+    # -- (bool) Включает использование TLS между collector и exporter в мультикластерных инсталляциях
+    # @section -- Exporter
+    enabled: false
+    crt:
+      # -- (string) Сертификат в Base64
+      # @section -- Exporter
+      crtBase64: ""
+      # -- (string) Ключ в Base64
+      # @section -- Exporter
+      keyBase64: ""
+      # -- (string) Существующий секрет типа kubernetes.io/tls, содержащий сертификат и ключ
+      # @section -- Exporter
+      secretName: ""
+    ca:
+      # -- (string) СА цепочка в Base64 формате
+      # @section -- Exporter
+      crtBase64: ""
+      # -- (string) Имя существующего секрета
+      # @section -- Exporter
+      secretName: ""
+      # -- (string) Ключ содержащий сертификат
+      # @section -- Exporter
+      secretKey: ""
+  export:
+    mtls:
+      # -- (bool) Включение взаимной TLS-аутентификации в модулях экспортера
+      # @section -- Exporter
+      enabled: false
+      # -- (string) Полный путь, где в контейнере хранятся сертификаты и ключ
+      # @section -- Exporter
+      mutualTlsFilesPath: ""
+      # -- (string) Сертификат в Base64
+      # @section -- Exporter
+      certificate: ""
+      # -- (string) Ключ в Base64
+      # @section -- Exporter
+      key: ""
+      # -- (string) СА цепочка в Base64 формате
+      # @section -- Exporter
+      ca: ""
+    # @schema
+    # additionalProperties: true
+    # @schema
+    # -- (object) Настройки для экспорта в системы, доступные варианты files/export-example.yaml
+    # @section -- Exporter
+    targets:
+      # @ignored
+      syslog:
+        host: ""
+        port: ""
+        protocol: tcp
+        severity: 5
+        reportOnlyNewAnomaly: false
+
+  image:
+    # -- (string) Тэг образа
+    # @section -- Exporter
+    tag: ""
+    # -- (string) Имя образа
+    # @section -- Exporter
+    name: exporter
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- Exporter
+    pullPolicy: IfNotPresent
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к подам
+  # @section -- Exporter
+  annotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к сервисам
+  # @section -- Exporter
+  serviceAnnotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- Exporter
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Управляет назначением подов на ноды через механизм tolerations
+  # @section -- Exporter
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+  # @section -- Exporter
+  affinity: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- Exporter
+  additionalEnvs: []
+  service:
+    # @schema
+    # enum:
+    # - ClusterIP
+    # - NodePort
+    # - LoadBalancer
+    # @schema
+    # -- Тип kubernetes сервиса
+    # @section -- Exporter
+    type: ClusterIP
+    # @schema
+    # type: ["null", "integer", "string"]
+    # @schema
+    # --  Порт на ноде кластера k8s, на который будет смаплен порт сервиса exporter. Используется только в случае если service.type=NodePort
+    # @section -- Exporter
+    nodePortGrpc: 
+    # @schema
+    # type: ["null", "integer", "string"]
+    # @schema
+    # -- Порт на ноде кластера k8s, на который будет смаплен служебный порт сервиса exporter, позволяющий получить метрики. Используется только в случае если service.type=NodePort
+    # @section -- Exporter
+    nodePortMetrics: 
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- Exporter
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- Exporter
+  resources:
+    requests:
+      cpu: 300m
+      memory: 200Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  # -- (object) Container securityContext
+  # @section -- Exporter
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    allowPrivilegeEscalation: false
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- Exporter
+    create: false
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- Exporter
+    name: ""
+  probes:
+    readiness:
+      # -- (bool) Включает readiness пробу
+      # @section -- Exporter
+      enabled: true
+    liveness:
+      # -- (bool) Включает liveness пробу
+      # @section -- Exporter
+      enabled: true
+  # -- (object) PodDisruptionBudget
+  # @section -- Exporter
+  pdb:
+    enabled: false
+    minAvailable: 1
+
+gateway:
+  # -- (bool) Включает деплой сервиса
+  # @section -- Gateway
+  enabled: true
+  log:
+    # @schema
+    # enum:
+    # - trace
+    # - debug
+    # - info
+    # - warn
+    # - err
+    # @schema
+    # -- Уровень логирования
+    # @section -- Gateway
+    logLevel: info
+  prometheus:
+    # -- (bool) Включает отображение prometheus метрик для сервиса
+    # @section -- Gateway
+    enabled: false
+  profiling:
+    # -- (bool) Включает профилирование сервиса
+    # @section -- Gateway
+    enabled: false
+  tls:
+    # -- (bool) Включает использование TLS между gateway и watcher, networker, collector
+    # @section -- Gateway
+    enabled: false
+    crt:
+      # -- (string) Сертификат в Base64
+      # @section -- Gateway
+      crtBase64: ""
+      # -- (string) Ключ в Base64
+      # @section -- Gateway
+      keyBase64: ""
+      # -- (string) Существующий секрет типа kubernetes.io/tls, содержащий сертификат и ключ
+      # @section -- Gateway
+      secretName: ""
+    ca:
+      # -- (string) СА цепочка в Base64 формате
+      # @section -- Gateway
+      crtBase64: ""
+      # -- (string) Имя существующего секрета
+      # @section -- Gateway
+      secretName: ""
+      # -- (string) Ключ содержащий сертификат
+      # @section -- Gateway
+      secretKey: ""
+  # -- (int) Максимальное количество одновременных соединений с БД
+  # @section -- Gateway
+  maxDbConnections: 8
+  cache:
+    # -- (bool) Включает кеширование в памяти
+    # @section -- Gateway
+    enabled: true
+
+  # -- (int) Количество реплик
+  # @section -- Gateway
+  replicas: 1
+  image:
+    # -- (string) Тэг образа
+    # @section -- Gateway
+    tag: ""
+    # -- (string) Имя образа
+    # @section -- Gateway
+    name: gateway
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- Gateway
+    pullPolicy: IfNotPresent
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к подам
+  # @section -- Gateway
+  annotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к сервисам
+  # @section -- Gateway
+  serviceAnnotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- Gateway
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Управляет назначением подов на ноды через механизм tolerations
+  # @section -- Gateway
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+  # @section -- Gateway
+  affinity: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- Gateway
+  additionalEnvs: []
+  service:
+    # @schema
+    # enum:
+    # - ClusterIP
+    # - NodePort
+    # - LoadBalancer
+    # @schema
+    # -- Тип kubernetes сервиса
+    # @section -- Gateway
+    type: ClusterIP
+    # -- (int) Порт сервиса gateway
+    # @section -- Gateway
+    port: 43100
+    # @schema
+    # type: ["null", "integer", "string"]
+    # @schema
+    # -- Порт на ноде кластера k8s, на который будет смаплен порт сервиса gateway. Используется только в случае если service.type=NodePort
+    # @section -- Gateway
+    nodePort:
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- Gateway
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- Gateway
+  resources:
+    requests:
+      cpu: 300m
+      memory: 200Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+  # -- (object) Container securityContext
+  # @section -- Gateway
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    allowPrivilegeEscalation: false
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- Gateway
+    create: false
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- Gateway
+    name: ""
+  # -- (object) PodDisruptionBudget
+  # @section -- Gateway
+  pdb:
+    enabled: false
+    minAvailable: 1
+
+kafka:
+  # -- (bool) Включает деплой сервиса
+  # @section -- Kafka
+  enabled: true
+  # -- (string) Задает максимальный и начальный размер heap для JVM. Рекомендуется устанавливать значение в 50-80%
+  # @section -- Kafka
+  kafkaHeapOpts: "-XX:MaxRAMPercentage=70.0 -XX:InitialRAMPercentage=10.0"
+  # -- (bool) Включает init контейнер, который удаляет все данные при рестарте kafka
+  # @section -- Kafka
+  initCleanupData: false
+
+  image:
+    # -- (string) Путь к registry с образом
+    # @section -- Kafka
+    registry: ""
+    # -- (string) Имя проекта и образа
+    # @section -- Kafka
+    name: luntry/3dparty/kafka
+    # -- (string) Тэг образа
+    # @section -- Kafka
+    tag: "3.8.1"
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- Kafka
+    pullPolicy: IfNotPresent
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к подам
+  # @section -- Kafka
+  annotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к сервисам
+  # @section -- Kafka
+  serviceAnnotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- Kafka
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Управляет назначением подов на ноды через механизм tolerations
+  # @section -- Kafka
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+  # @section -- Kafka
+  affinity: {}
+  # -- (object) Container securityContext
+  # @section -- Kafka
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    runAsGroup: 1000
+    runAsNonRoot: true
+    runAsUser: 1000
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- Kafka
+    create: false
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- Kafka
+    name: ""
+  # -- (object) Pod securityContext
+  # @section -- Kafka
+  podSecurityContext:
+    fsGroup: 1000
+    fsGroupChangePolicy: Always
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- Kafka
+  additionalEnvs: []
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- Kafka
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- Kafka
+  resources:
+    requests:
+      cpu: 2000m
+      memory: 3Gi
+    limits:
+      cpu: 2000m
+      memory: 3Gi
+  pvc:
+    # @schema
+    # enum:
+    # - emptydir
+    # - genericEphemeralVolume
+    # - pvc
+    # @schema
+    # -- Тип хранилища
+    # @section -- Kafka
+    type: pvc
+    # -- (string) Имя существующего StorageClass
+    # @section -- Kafka
+    storageClass: ""
+    # -- (string) Размер хранилища
+    # @section -- Kafka
+    size: 10Gi
+    # -- (string) Режимы доступа к хранилищу
+    # @section -- Kafka
+    accessMode: ReadWriteOnce
+  pv:
+    # -- (bool) Включает создание local storage PV при установке
+    # @section -- Kafka
+    enabled: false
+    # -- (string) Путь на ноде для хранения данных PV (Путь должен быть предварительно создан на ноде)
+    # @section -- Kafka
+    localPath: /opt/luntry-kafka
+    storageClass:
+      # -- (bool) Создать local-only StorageClass при создании локального PV
+      # @section -- Kafka
+      create: true
+      # -- (string) Использовать существующий local-only StorageClass для локального PV
+      # @section -- Kafka
+      name: ""
+    # @schema
+    # enum:
+    # - Recycle
+    # - Retain
+    # - Delete
+    # @schema
+    # -- Политика переиспользования PV, для сохранения данных в случае удаления, используйте "Retain"
+    # @section -- Kafka
+    reclaimPolicy: Recycle
+  metricExporter:
+    # -- (bool) Включает деплой сервиса
+    # @section -- Kafka
+    enabled: false
+    image:
+      # -- (string) Путь к registry с образом
+      # @section -- Kafka
+      registry: registry.hub.docker.com
+      # -- (string) Имя проекта и образа
+      # @section -- Kafka
+      name: redpandadata/kminion
+      # -- (string) Тэг образа
+      # @section -- Kafka
+      tag: v2.2.13
+      # @schema
+      # enum:
+      # - IfNotPresent
+      # - Always
+      # - Never
+      # @schema
+      # -- imagePullPolicy
+      # @section -- Kafka
+      pullPolicy: IfNotPresent
+    # -- (object) Container securityContext
+    # @section -- Kafka
+    securityContext:
+      runAsUser: 100
+      runAsGroup: 101
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+    # @schema
+    # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+    # @schema
+    # -- (string) Пресет ресурсов
+    # @section -- Kafka
+    resourcesPreset: none
+    # -- (object) Запросы / лимиты ресурсов
+    # @section -- Kafka
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+      limits:
+        cpu: 200m
+        memory: 250Mi
+  console:
+    # -- (bool) Включает деплой kafka-console
+    # @section -- Kafka
+    enabled: false
+    image:
+      # -- (string) Путь к registry с образом
+      # @section -- Kafka
+      registry: registry.hub.docker.com
+      # -- (string) Имя проекта и образа
+      # @section -- Kafka
+      name: redpandadata/console
+      # -- (string) Тэг образа
+      # @section -- Kafka
+      tag: v2.7.2
+      # @schema
+      # enum:
+      # - IfNotPresent
+      # - Always
+      # - Never
+      # @schema
+      # -- imagePullPolicy
+      # @section -- Kafka
+      pullPolicy: IfNotPresent
+    # -- (object) Container securityContext
+    # @section -- Kafka
+    securityContext:
+      runAsUser: 100
+      runAsGroup: 101
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+    # @schema
+    # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+    # @schema
+    # -- (string) Пресет ресурсов
+    # @section -- Kafka
+    resourcesPreset: none
+    # -- (object) Запросы / лимиты ресурсов
+    # @section -- Kafka
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+      limits:
+        cpu: 1000m
+        memory: 1000Mi
+    service:
+    # -- (bool) Включает деплой сервиса kafka-console
+    # @section -- Kafka
+      enabled: true
+      # @schema
+      # enum:
+      # - ClusterIP
+      # - NodePort
+      # - LoadBalancer
+      # @schema
+      # -- Тип kubernetes сервиса
+      # @section -- Kafka
+      type: ClusterIP
+      # @schema
+      # type: ["null", "integer", "string"]
+      # @schema
+      # --  Порт на ноде кластера k8s, на который будет смаплен порт сервиса Kafka. Используется только в случае если service.type=NodePort
+      # @section -- Kafka
+      nodePort: 
+  pemToKeystore:
+    # -- (object) Запросы / лимиты ресурсов
+    # @section -- Kafka
+    resources:
+      requests:
+        cpu: 100m
+        memory: 30Mi
+      limits:
+        cpu: 150m
+        memory: 100Mi
+
+linker:
+  # -- (bool) Включает деплой сервиса
+  # @section -- Linker
+  enabled: true
+  log:
+    # @schema
+    # enum:
+    # - trace
+    # - debug
+    # - info
+    # - warn
+    # - err
+    # @schema
+    # -- Уровень логирования
+    # @section -- Linker
+    logLevel: info
+  prometheus:
+    # -- (bool) Включает отображение prometheus метрик для сервиса
+    # @section -- Linker
+    enabled: false
+  profiling:
+    # -- (bool) Включает профилирование сервиса
+    # @section -- Linker
+    enabled: false
+
+  image:
+    # -- (string) Тэг образа
+    # @section -- Linker
+    tag: ""
+    # -- (string) Имя образа
+    # @section -- Linker
+    name: networker
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- Linker
+    pullPolicy: IfNotPresent
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к подам
+  # @section -- Linker
+  annotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к сервисам
+  # @section -- Linker
+  serviceAnnotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- Linker
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Управляет назначением подов на ноды через механизм tolerations
+  # @section -- Linker
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+  # @section -- Linker
+  affinity: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- Linker
+  additionalEnvs: []
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- Linker
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- Linker
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  # -- (object) Container securityContext
+  # @section -- Linker
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    allowPrivilegeEscalation: false
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- Linker
+    create: false
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- Linker
+    name: ""
+  # -- (object) PodDisruptionBudget
+  # @section -- Linker
+  pdb:
+    enabled: false
+    minAvailable: 1
+
+migrator:
+  # -- (bool) Включает вывод отладочных логов в stdout
+  # @section -- Migrator
+  debug: false
+
+  image:
+    # -- (string) Имя образа
+    # @section -- Migrator
+    name: migrator
+    # -- (string) Тэг образа
+    # @section -- Migrator
+    tag: ""
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- Migrator
+    pullPolicy: IfNotPresent
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- Migrator
+  resources:
+    requests:
+      cpu: 100m
+      memory: 300Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  # -- (object) Container securityContext
+  # @section -- Migrator
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    allowPrivilegeEscalation: false
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- Migrator
+  additionalEnvs: []
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- Migrator
+    create: false
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- Migrator
+    name: ""
+
+migratorClickhouse:
+  # -- (bool) Включает деплой сервиса
+  # @section -- MigratorClickhouse
+  enabled: true
+  # -- (bool) Включает вывод отладочных логов в stdout
+  # @section -- MigratorClickhouse
+  debug: false
+
+  image:
+    # -- (string) Имя образа
+    # @section -- MigratorClickhouse
+    name: migrator-clickhouse
+    # -- (string) Тэг образа
+    # @section -- MigratorClickhouse
+    tag: ""
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- MigratorClickhouse
+    pullPolicy: IfNotPresent
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- MigratorClickhouse
+  resources:
+    requests:
+      cpu: 100m
+      memory: 300Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  # -- (object) Container securityContext
+  # @section -- MigratorClickhouse
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    allowPrivilegeEscalation: false
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- MigratorClickhouse
+  additionalEnvs: []
+
+monitoring:
+  prometheusOperatorAnnotations:
+    # -- (bool) Включает добавление к подам Luntry аннотаций для сбора prometheus метрик
+    # @section -- Monitoring
+    enabled: false
+  victoriaMetricsScrapeCR:
+    # -- (bool) Включает деплой victoriaMetrics custom resources: VMPodScrape и VMServiceScrape для сбора prometheus метрик
+    # @section -- Monitoring
+    enabled: false
+
+  # -- (bool) Деплой локального prometheus и grafana (а также включение отдачи метрик во всех компонентах)
+  # @section -- Monitoring
+  enabled: false
+  grafana:
+    # -- (bool) Включение установки пода grafana в неймспейс Luntry
+    # @section -- Monitoring
+    enabled: true
+    image:
+      # -- (string) Путь к registry с образом
+      # @section -- Monitoring
+      registry: ""
+      # -- (string) Имя проекта и образа
+      # @section -- Monitoring
+      repository: luntry/3dparty/grafana
+      # -- (string) Тэг образа
+      # @section -- Monitoring
+      tag: "10.3.1"
+    # @schema
+    # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+    # @schema
+    # -- (string) Пресет ресурсов
+    # @section -- Monitoring
+    resourcesPreset: none
+    # -- (object) Запросы / лимиты ресурсов
+    # @section -- Monitoring
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+    service:
+      # @schema
+      # enum:
+      # - ClusterIP
+      # - NodePort
+      # - LoadBalancer
+      # @schema
+      # -- Тип kubernetes сервиса
+      # @section -- Monitoring
+      type: LoadBalancer
+    ingress:
+      # -- (bool) Включает использование ingress
+      # @section -- Monitoring
+      enabled: false
+      # -- (string) Доменное имя для доступа к веб-интерфейсу
+      # @section -- Monitoring
+      domainName: ""
+      # -- (string) ingress класс
+      # @section -- Monitoring
+      ingressClassName: nginx
+      tls:
+        # -- (bool) Включает использование TLS
+        # @section -- Monitoring
+        enabled: false
+        # -- (string) Имя секрета в namespace Luntry, содержащего TLS-сертификат и ключ
+        # @section -- Monitoring
+        secretName: ""
+    # @schema
+    # additionalProperties: true
+    # @schema
+    # -- (object) Позволяет добавлять аннотации к подам
+    # @section -- Monitoring
+    annotations: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
+    # -- (object) Позволяет добавлять аннотации к сервисам
+    # @section -- Monitoring
+    serviceAnnotations: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
+    # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+    # @section -- Monitoring
+    nodeSelector: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
+    # -- (list) Управляет назначением подов на ноды через механизм tolerations
+    # @section -- Monitoring
+    tolerations: []
+    # @schema
+    # additionalProperties: true
+    # @schema
+    # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+    # @section -- Monitoring
+    affinity: {}
+    # -- (object) Container securityContext
+    # @section -- Monitoring
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 65532
+    # -- (object) Pod securityContext
+    # @section -- Monitoring
+    podSecurityContext:
+      fsGroup: 65532
+      fsGroupChangePolicy: Always
+    pvc:
+      # @schema
+      # enum:
+      # - emptydir
+      # - genericEphemeralVolume
+      # - pvc
+      # @schema
+      # -- Тип хранилища
+      # @section -- Monitoring
+      type: pvc
+      # -- (string) Имя существующего StorageClass
+      # @section -- Monitoring
+      storageClass: ""
+      # -- (string) Размер хранилища
+      # @section -- Monitoring
+      size: 1Gi
+      # -- (string) Режимы доступа к хранилищу
+      # @section -- Monitoring
+      accessMode: ReadWriteOnce
+    pv:
+      # -- (bool) Включает создание local storage PV при установке
+      # @section -- Monitoring
+      enabled: false
+      # -- (string) Путь на ноде для хранения данных PV (Путь должен быть предварительно создан на ноде)
+      # @section -- Monitoring
+      localPath: /opt/luntry-grafana
+      storageClass:
+        # -- (bool) Создать local-only StorageClass при создании локального PV
+        # @section -- Monitoring
+        create: true
+        # -- (string) Использовать существующий local-only StorageClass для локального PV
+        # @section -- Monitoring
+        name: ""
+      # @schema
+      # enum:
+      # - Recycle
+      # - Retain
+      # - Delete
+      # @schema
+      # -- Политика переиспользования PV, для сохранения данных в случае удаления, используйте "Retain"
+      # @section -- Monitoring
+      reclaimPolicy: Recycle
+  prometheus:
+    # -- (bool) Включение установки под prometheus в неймспейс Luntry
+    # @section -- Monitoring
+    enabled: true
+    image:
+      # -- (string) Путь к registry с образом
+      # @section -- Monitoring
+      registry: ""
+      # -- (string) Имя проекта и образа
+      # @section -- Monitoring
+      repository: luntry/3dparty/prometheus
+      # -- (string) Тэг образа
+      # @section -- Monitoring
+      tag: v2.45.3
+    # @schema
+    # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+    # @schema
+    # -- (string) Пресет ресурсов
+    # @section -- Monitoring
+    resourcesPreset: none
+    # -- (object) Запросы / лимиты ресурсов
+    # @section -- Monitoring
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+    service:
+      # @schema
+      # enum:
+      # - ClusterIP
+      # - NodePort
+      # - LoadBalancer
+      # @schema
+      # -- Тип kubernetes сервиса
+      # @section -- Monitoring
+      type: ClusterIP
+    ingress:
+      # -- (bool) Включает использование ingress
+      # @section -- Monitoring
+      enabled: false
+      # -- (string) Доменное имя для доступа к веб-интерфейсу
+      # @section -- Monitoring
+      domainName: ""
+      # -- (string) ingress класс
+      # @section -- Monitoring
+      ingressClassName: nginx
+      tls:
+        # -- (bool) Включает использование TLS
+        # @section -- Monitoring
+        enabled: false
+        # -- (string) Имя секрета в namespace Luntry, содержащего TLS-сертификат и ключ
+        # @section -- Monitoring
+        secretName: ""
+    # @schema
+    # additionalProperties: true
+    # @schema
+    # -- (object) Позволяет добавлять аннотации к подам
+    # @section -- Monitoring
+    annotations: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
+    # -- (object) Позволяет добавлять аннотации к сервисам
+    # @section -- Monitoring
+    serviceAnnotations: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
+    # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+    # @section -- Monitoring
+    nodeSelector: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
+    # -- (list) Управляет назначением подов на ноды через механизм tolerations
+    # @section -- Monitoring
+    tolerations: []
+    # @schema
+    # additionalProperties: true
+    # @schema
+    # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+    # @section -- Monitoring
+    affinity: {}
+    # -- (object) Container securityContext
+    # @section -- Monitoring
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 65532
+    # -- (object) Pod securityContext
+    # @section -- Monitoring
+    podSecurityContext:
+      fsGroup: 65532
+      fsGroupChangePolicy: Always
+    pvc:
+      # @schema
+      # enum:
+      # - emptydir
+      # - genericEphemeralVolume
+      # - pvc
+      # @schema
+      # -- Тип хранилища
+      # @section -- Monitoring
+      type: pvc
+      # -- (string) Имя существующего StorageClass
+      # @section -- Monitoring
+      storageClass: ""
+      # -- (string) Размер хранилища
+      # @section -- Monitoring
+      size: 10Gi
+      # -- (string) Режимы доступа к хранилищу
+      # @section -- Monitoring
+      accessMode: ReadWriteOnce
+    pv:
+      # -- (bool) Включает создание local storage PV при установке
+      # @section -- Monitoring
+      enabled: false
+      # -- (string) Путь на ноде для хранения данных PV (Путь должен быть предварительно создан на ноде)
+      # @section -- Monitoring
+      localPath: /opt/luntry-prometheus
+      storageClass:
+        # -- (bool) Создать local-only StorageClass при создании локального PV
+        # @section -- Monitoring
+        create: true
+        # -- (string) Использовать существующий local-only StorageClass для локального PV
+        # @section -- Monitoring
+        name: ""
+      # @schema
+      # enum:
+      # - Recycle
+      # - Retain
+      # - Delete
+      # @schema
+      # -- Политика переиспользования PV, для сохранения данных в случае удаления, используйте "Retain"
+      # @section -- Monitoring
+      reclaimPolicy: Recycle
+    # -- (list) Лист значений для добавления federated prometheus серверов в мультикластер инсталляции
+    # @section -- Monitoring
+    federation: []
+      # - name: Cluster-2
+      #   endpoint: 192.168.0.1:9090
+
+networker:
+  # -- (bool) Включает деплой сервиса
+  # @section -- Networker
+  enabled: true
+  log:
+    # @schema
+    # enum:
+    # - trace
+    # - debug
+    # - info
+    # - warn
+    # - err
+    # @schema
+    # -- Уровень логирования
+    # @section -- Networker
+    logLevel: info
+  prometheus:
+    # -- (bool) Включает отображение prometheus метрик для сервиса
+    # @section -- Networker
+    enabled: false
+  profiling:
+    # -- (bool) Включает профилирование сервиса
+    # @section -- Networker
+    enabled: false
+
+  image:
+    # -- (string) Тэг образа
+    # @section -- Networker
+    tag: ""
+    # -- (string) Имя образа
+    # @section -- Networker
+    name: networker
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- Networker
+    pullPolicy: IfNotPresent
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к подам
+  # @section -- Networker
+  annotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к сервисам
+  # @section -- Networker
+  serviceAnnotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- Networker
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Управляет назначением подов на ноды через механизм tolerations
+  # @section -- Networker
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+  # @section -- Networker
+  affinity: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- Networker
+  additionalEnvs: []
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- Networker
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- Networker
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  # -- (object) Container securityContext
+  # @section -- Networker
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    allowPrivilegeEscalation: false
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- Networker
+    create: false
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- Networker
+    name: ""
+  # -- (object) PodDisruptionBudget
+  # @section -- Networker
+  pdb:
+    enabled: false
+    minAvailable: 1
+
+policier:
+  # -- (bool) Включает деплой сервиса
+  # @section -- Policier
+  enabled: true
+  # @schema
+  # enum:
+  # - gateway
+  # - db
+  # @schema
+  # -- Выбор драйвера для подключения к БД
+  # @section -- Policier
+  driver: gateway
+  log:
+    # @schema
+    # enum:
+    # - trace
+    # - debug
+    # - info
+    # - warn
+    # - err
+    # @schema
+    # -- Уровень логирования
+    # @section -- Policier
+    logLevel: info
+  prometheus:
+    # -- (bool) Включает отображение prometheus метрик для сервиса
+    # @section -- Policier
+    enabled: false
+  profiling:
+    # -- (bool) Включает профилирование сервиса
+    # @section -- Policier
+    enabled: false
+
+  image:
+    # -- (string) Тэг образа
+    # @section -- Policier
+    tag: ""
+    # -- (string) Имя образа
+    # @section -- Policier
+    name: policier
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- Policier
+    pullPolicy: IfNotPresent
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к подам
+  # @section -- Policier
+  annotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к сервисам
+  # @section -- Policier
+  serviceAnnotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- Policier
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Управляет назначением подов на ноды через механизм tolerations
+  # @section -- Policier
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+  # @section -- Policier
+  affinity: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- Policier
+  additionalEnvs: []
+  # -- (object) Container securityContext
+  # @section -- Policier
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    allowPrivilegeEscalation: false
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- Policier
+    create: false
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- Policier
+    name: ""
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- Policier
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- Policier
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+  # -- (object) PodDisruptionBudget
+  # @section -- Policier
+  pdb:
+    enabled: false
+    minAvailable: 1
+
+retention:
+  # -- (bool) Включает деплой сервиса
+  # @section -- Retention
+  enabled: true
+  prometheus:
+    # -- (bool) Включает отображение prometheus метрик для сервиса
+    # @section -- Retention
+    enabled: false
+  profiling:
+    # -- (bool) Включает профилирование сервиса
+    # @section -- Retention
+    enabled: false
+  # -- (string) Периодичность запуска цикла отчистки в формате Cron "сек минут час день_мес день_нед"
+  # @section -- Retention
+  runSchedule: "0 0 */1 * *"
+  # -- (int) Максимальное количество объектов удаляемых в рамках одного запроса
+  # @section -- Retention
+  queryLimit: 1000
+  defaultpolicy:
+    # -- (int) Период хранения информации об аномалиях (в часах)
+    # @section -- Retention
+    anomaly: 24
+    # -- (int) Период хранения информации о фактах регистрации аномалий (в часах)
+    # @section -- Retention
+    anomalyObservation: 24
+    # -- (int) Период хранения информации о k8s объектах (в часах)
+    # @section -- Retention
+    kubernetesHistory: 24
+    # -- (int) Период хранения информации об изменениях k8s объектов (в часах)
+    # @section -- Retention
+    policies: 24
+    # -- (int) Период хранения информации о k8s событиях (в часах)
+    # @section -- Retention
+    events: 24
+    # -- (int) Период хранения информации о сработках Runtime Rules (в часах)
+    # @section -- Retention
+    ruleDetects: 24
+
+  image:
+    # -- (string) Тэг образа
+    # @section -- Retention
+    tag: ""
+    # -- (string) Имя образа
+    # @section -- Retention
+    name: retention
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- Retention
+    pullPolicy: IfNotPresent
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к подам
+  # @section -- Retention
+  annotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- Retention
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Управляет назначением подов на ноды через механизм tolerations
+  # @section -- Retention
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+  # @section -- Retention
+  affinity: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- Retention
+  additionalEnvs: []
+  # -- (object) Container securityContext
+  # @section -- Retention
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    allowPrivilegeEscalation: false
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- Retention
+    create: false
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- Retention
+    name: ""
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- Retention
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- Retention
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  # -- (object) PodDisruptionBudget
+  # @section -- Retention
+  pdb:
+    enabled: false
+    minAvailable: 1
+
+redis:
+  # -- (bool) Включает деплой сервиса
+  # @section -- Redis
+  enabled: true
+  image:
+    # -- (string) Путь к registry с образом
+    # @section -- Redis
+    registry: ""
+    # -- (string) Имя проекта и образа
+    # @section -- Redis
+    name: luntry/3dparty/redis
+    # -- (string) Тэг образа
+    # @section -- Redis
+    tag: "7.2.11"
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- Redis
+    pullPolicy: IfNotPresent
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к подам
+  # @section -- Redis
+  annotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к сервисам
+  # @section -- Redis
+  serviceAnnotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- Redis
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Управляет назначением подов на ноды через механизм tolerations
+  # @section -- Redis
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+  # @section -- Redis
+  affinity: {}
+  # -- (object) Container securityContext
+  # @section -- Redis
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    runAsGroup: 1000
+    runAsNonRoot: false
+    runAsUser: 1000
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- Redis
+    create: false
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- Redis
+    name: ""
+  # -- (object) Pod securityContext
+  # @section -- Redis
+  podSecurityContext:
+    fsGroup: 1000
+    fsGroupChangePolicy: Always
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- Redis
+  additionalEnvs: []
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- Redis
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- Redis
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 1Gi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  pvc:
+    # @schema
+    # enum:
+    # - emptydir
+    # - genericEphemeralVolume
+    # - pvc
+    # @schema
+    # -- Тип хранилища
+    # @section -- Redis
+    type: pvc
+    # -- (string) Имя существующего StorageClass
+    # @section -- Redis
+    storageClass: ""
+    # -- (string) Размер хранилища
+    # @section -- Redis
+    size: 10Gi
+    # -- (string) Режимы доступа к хранилищу
+    # @section -- Redis
+    accessMode: ReadWriteOnce
+  pv:
+    # -- (bool) Включает создание local storage PV при установке
+    # @section -- Redis
+    enabled: false
+    # -- (string) Путь на ноде для хранения данных PV (Путь должен быть предварительно создан на ноде)
+    # @section -- Redis
+    localPath: /opt/luntry-redis
+    storageClass:
+      # -- (bool) Создать local-only StorageClass при создании локального PV
+      # @section -- Redis
+      create: true
+      # -- (string) Использовать существующий local-only StorageClass для локального PV
+      # @section -- Redis
+      name: ""
+    # @schema
+    # enum:
+    # - Recycle
+    # - Retain
+    # - Delete
+    # @schema
+    # -- Политика переиспользования PV, для сохранения данных в случае удаления, используйте "Retain"
+    # @section -- Redis
+    reclaimPolicy: Recycle
+  metricExporter:
+    # -- (bool) Включает деплой сервиса
+    # @section -- Redis
+    enabled: false
+    image:
+      # -- (string) Путь к registry с образом
+      # @section -- Redis
+      registry: registry.hub.docker.com
+      # -- (string) Имя проекта и образа
+      # @section -- Redis
+      name: oliver006/redis_exporter
+      # -- (string) Тэг образа
+      # @section -- Redis
+      tag: v1.74.0
+      # @schema
+      # enum:
+      # - IfNotPresent
+      # - Always
+      # - Never
+      # @schema
+      # -- imagePullPolicy
+      # @section -- Redis
+      pullPolicy: IfNotPresent
+    # -- (object) Container securityContext
+    # @section -- Redis
+    securityContext:
+      runAsUser: 59000
+      runAsGroup: 59000
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+    # @schema
+    # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+    # @schema
+    # -- (string) Пресет ресурсов
+    # @section -- Redis
+    resourcesPreset: none
+    # -- (object) Запросы / лимиты ресурсов
+    # @section -- Redis
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+      limits:
+        cpu: 200m
+        memory: 250Mi
+
+imageScanner:
+  mode:
+    # -- (bool) Включает деплой сервиса для сканирования образов в кластере
+    # @section -- Image Scanner
+    cluster: true
+    # -- (bool) Включает деплой сервиса для сканирования образов в реестрах
+    # @section -- Image Scanner
+    registry: true
+  # @schema
+  # enum:
+  # - gateway
+  # - db
+  # @schema
+  # -- Выбор драйвера для подключения к БД
+  # @section -- Image Scanner
+  driver: gateway
+  log:
+    # @schema
+    # enum:
+    # - trace
+    # - debug
+    # - info
+    # - warn
+    # - error
+    # - fatal
+    # - panic
+    # @schema
+    # -- Уровень логирования
+    # @section -- Image Scanner
+    logLevel: info
+  # -- (string) Имя неймспейса содержащего fallback секрет
+  # @section -- Image Scanner
+  fallbackSecretNamespace: ""
+  # @schema
+  # enum:
+  # - all-layers
+  # - squashed
+  # @schema
+  # -- Выбор скоупа сканирования
+  # @section -- Image Scanner
+  scope: all-layers
+  # -- (bool) Режим работы сканера. По умолчанию сканер работает в масштабируемом режиме
+  # @section -- Image Scanner
+  singleton: false
+  replicas:
+    # -- (int) Количество реплик сканера для сканирования образов в кластере
+    # @section -- Image Scanner
+    cluster: 1
+    # -- (int) Количество реплик сканера для сканирования образов в реестрах
+    # @section -- Image Scanner
+    registry: 1
+  # -- Метрики
+  # @section -- Image Scanner
+  prometheus:
+    # -- (bool) Включает отображение prometheus метрик для сервиса
+    # @section -- Image Scanner
+    enabled: false
+  # -- Профилирование
+  # @section -- Image Scanner
+  profiling:
+    # -- (bool) Включает профилирование для сервиса
+    # @section -- Image Scanner
+    enabled: false
+  # -- (string) Адрес листинга БД уязвимостей
+  # @section -- Image Scanner
+  dbListing: https://v6.luntry.ru/latest.json
+  # -- (string) Адрес БД эксплоитов
+  # @section -- Image Scanner
+  dbExploits: https://e.luntry.ru/e.tar.gz
+  # -- (string) Строка для шифрования секретов при передаче
+  # @section -- Image Scanner
+  encryptionString: ""
+  # -- Настройка использования YARA-сканера
+  # @section -- Image Scanner
+  yara:
+    # -- (bool) Использовать отдельный исполняемый файл для YARA сканирования
+    # @section -- Image Scanner
+    useBinary: true
+    # -- (string) Относительный путь к исполняемому файлу с YARA сканером
+    # @section -- Image Scanner
+    binaryPath: yara-scanner
+
+  image:
+    # -- (string) Тэг образа
+    # @section -- Image Scanner
+    tag: ""
+    # -- (string) Имя образа
+    # @section -- Image Scanner
+    name: image-scanner
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- Image Scanner
+    pullPolicy: IfNotPresent
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к подам
+  # @section -- Image Scanner
+  annotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к сервисам
+  # @section -- Image Scanner
+  serviceAnnotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- Image Scanner
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Управляет назначением подов на ноды через механизм tolerations
+  # @section -- Image Scanner
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+  # @section -- Image Scanner
+  affinity: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- Image Scanner
+  additionalEnvs: []
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- Image Scanner
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- Image Scanner
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
+    limits:
+      cpu: 1
+      memory: 2Gi
+  # -- (object) Container securityContext
+  # @section -- Image Scanner
+  securityContext:
+    capabilities:
+      drop:
+      - ALL
+    privileged: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 65532
+    runAsGroup: 65532
+    allowPrivilegeEscalation: false
+  # -- (object) Pod securityContext
+  # @section -- Image Scanner
+  podSecurityContext:
+    fsGroup: 65532
+    fsGroupChangePolicy: Always
+  # -- (object) RBAC
+  # @section -- Image Scanner
+  rbac:
+    cluster:
+      create: true
+    registry:
+      create: false
+  probes:
+    readiness:
+      # -- (bool) Включает readiness пробу
+      # @section -- Image Scanner
+      enabled: true
+    liveness:
+      # -- (bool) Включает liveness пробу
+      # @section -- Image Scanner
+      enabled: true
+  serviceAccount:
+    cluster:
+      # -- (bool) Включает создание сервис аккаунта для сканирования образов в кластере
+      # @section -- Image Scanner
+      create: true
+      # -- (string) Имя существующего сервис аккаунта для сканирования образов в кластере
+      # @default -- ReleaseName-image-scanner
+      # @section -- Image Scanner
+      name: ""
+    registry:
+      # -- (bool) Включает создание сервис аккаунта для сканирования образов в реестрах
+      # @section -- Image Scanner
+      create: false
+      # -- (string) Имя существующего сервис аккаунта для сканирования образов в реестрах
+      # @default -- ReleaseName-registry-scanner
+      # @section -- Image Scanner
+      name: ""
+  pvc:
+    # @schema
+    # enum:
+    # - emptydir
+    # - genericEphemeralVolume
+    # @schema
+    # -- Тип хранилища
+    # @section -- Image Scanner
+    type: emptydir
+    # -- (string) Размер /tmp директории
+    # @section -- Image Scanner
+    size: 15Gi
+    # -- (string) Имя существующего StorageClass
+    # @section -- Image Scanner
+    storageClass: ""
+
+sensor:
+  # -- (bool) Включает деплой сервиса
+  # @section -- Sensor
+  enabled: true
+  btf:
+    # -- (bool) Включает использование BTF информации для компиляции eBPF пробы. Используется в случае, если на нодах отсутствуют хедеры ядра
+    # @section -- Sensor
+    enabled: false
+  modulesDisabled:
+    # -- (int) Отключает сбор файловых событий
+    # @section -- Sensor
+    files: 0
+    # -- (int) Отключает сбор сетевых событий
+    # @section -- Sensor
+    network: 0
+  unstableMonotonic:
+    # -- (bool) В виртуализированных средах может возникать ошибка связанная с kernel monotonic clock
+    # @section -- Sensor
+    enabled: false
+  balancing:
+    # -- (int) Задает время ожидания перед следующим реконнектом сенсора к коллектору при ребалансировке
+    # @section -- Sensor
+    reconnectTimeout: 1800
+    # -- (int) Задает минимальную разницу нагрузки коллекторов при которой произойдет ребалансировка
+    # @section -- Sensor
+    reconnectPercDelta: 20
+  dropOverflowEvents:
+    # -- (bool) Включает отбрасывание избыточных событий, которые могут вызвать переполнение локальной RPC очереди, может приводить к потере событий
+    # @section -- Sensor
+    enabled: false
+  dropEventsBeforeConvergence:
+    # -- (bool) Включает отбрасывание избыточных событий, на этапе запуска и построения дерева процессов. Позволяет снизить нагрузку на систему во время старта сенсора
+    # @section -- Sensor
+    enabled: true
+  sendNonContainerEvents:
+    # -- (bool) Включает более агрессивный дроп событий не относящихся к контейнерным. Может приводить к потере контейнерных событий, имеет смысл использовать только в некоторых средах
+    # @section -- Sensor
+    enabled: false
+  # -- (int) Размер локальной очереди событий, рекомендуется увеличить значение в случае наблюдения проблем связанных с переполнением локальной очереди
+  # @section -- Sensor
+  rpcQueueCapacity: 600000
+  # -- (int) Ограничивает размер аргументов процессов, передаваемых на бэкенд
+  # @section -- Sensor
+  argsLengthLimit: 1000
+  log:
+    # -- (string) Уровень логирования. Установите "sensor=trace,procfs_scraper=trace,rpc=trace" для отладки.
+    # @section -- Sensor
+    logLevel: sensor=info
+    # -- (bool) Verbose режим загрузки eBPF-пробы
+    # @section -- Sensor
+    bpfDebug: false
+    # -- (bool) Расширенный вывод в stdout
+    # @section -- Sensor
+    verbose: false
+    # -- (bool) Запуск инит контейнера для очистки старых дебаг логов, имеет смысл включать только в случае если logLevel=trace
+    # @section -- Sensor
+    cleanup: false
+  prometheus:
+    # -- (bool) Включает отображение prometheus метрик для сервиса
+    # @section -- Sensor
+    enabled: false
+    # -- (string) Настройка порта контейнера, на котором будут отображаться метрики
+    # @section -- Sensor
+    address: "0.0.0.0:8080"
+  readinessCheck:
+    # -- (bool) Включает readiness endpoint для подов сенсора. Сенсор переходит в Ready после окончания процедуры схождения
+    # @section -- Sensor
+    enabled: true
+  # -- (string) Задает директорию внутри сенсора для сохранения дебаг логов. Используется только в случае, если уровень логирования выставлен в trace
+  # @section -- Sensor
+  dataDir: "/host/var/lib/sensor/"
+  # -- (string) Задает корневую директорию внутри контейнера для маунта директорий хоста
+  # @section -- Sensor
+  hostRoot: "/host"
+  # @ignored
+  wait:
+    collector:
+      enabled: true
+    backoffIntervalSec: 20
+    maxBackoffs: 60
+    delayAfterEndpointAvailable: 0
+  reactions:
+    # -- (bool) Включает опции необходимые для применения reaction policies сенсором
+    # @section -- Sensor
+    enabled: true
+    remote:
+      ftp:
+        # @schema
+        # examples: ["name:port", "x.x.x.x:port"]
+        # @schema
+        # -- (string) Адрес и порт ftp сервера
+        # @section -- Sensor
+        host: ""
+        # -- (string) Логин пользователя
+        # @section -- Sensor
+        username: ""
+        # -- (string) Пароль пользователя
+        # @section -- Sensor
+        password: ""
+      smb:
+        # @schema
+        # examples: ["name:port", "x.x.x.x:port"]
+        # @schema
+        # -- (string) Адрес и порт smb сервера
+        # @section -- Sensor
+        host: ""
+        # -- (string) Логин пользователя
+        # @section -- Sensor
+        username: ""
+        # -- (string) Пароль пользователя
+        # @section -- Sensor
+        password: ""
+      s3:
+        # @schema
+        # examples: ["name:port", "x.x.x.x:port"]
+        # @schema
+        # -- (string) Адрес и порт S3 сервера
+        # @section -- Sensor
+        host: ""
+        # -- (string) Ключ доступа по S3 (access key)
+        # @section -- Sensor
+        username: ""
+        # -- (string) Секретный ключ доступа по S3 (secret key)
+        # @section -- Sensor
+        password: ""
+      rsync:
+        # -- (string) Абсолютный путь к директории на хосте для сохранения дампов. Директория будет создана, если не существует
+        # @section -- Sensor
+        hostDir: ""
+        # -- (string) Абсолютный путь к директории внутри контейнера для сохранения дампа. Директория должна совпадать с указанной в поле Output Directory настроек Reaction Policy
+        # @section -- Sensor
+        containerDir: ""
+
+  image:
+    # -- (string) Имя образа
+    # @section -- Sensor
+    name: sensor-rs
+    # -- (string) Тэг образа
+    # @section -- Sensor
+    tag: ""
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- Sensor
+    pullPolicy: IfNotPresent
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к подам
+  # @section -- Sensor
+  annotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- Sensor
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Управляет назначением подов на ноды через механизм tolerations
+  # @section -- Sensor
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+  # @section -- Sensor
+  affinity: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- Sensor
+  additionalEnvs: []
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- Sensor
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- Sensor
+  resources:
+    requests:
+      cpu: 200m
+      memory: 200Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+  # -- (object) Container securityContext
+  # @section -- Sensor
+  securityContext:
+    runAsNonRoot: false
+    privileged: true
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- Sensor
+    create: false
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- Sensor
+    name: ""
+  pvc:
+    # @schema
+    # enum:
+    # - emptydir
+    # - genericEphemeralVolume
+    # @schema
+    # -- Тип хранилища
+    # @section -- Sensor
+    type: emptydir
+    # -- (string) Размер /tmp директории для сохранения дампа памяти и файловой системы перед отправкой на удаленный сервер
+    # @section -- Sensor
+    size: 5Gi
+    # -- (string) Имя существующего StorageClass
+    # @section -- Sensor
+    storageClass: ""
+
+supervisor:
+  # -- (bool) Включает деплой сервиса
+  # @section -- Supervisor
+  enabled: false
+  # -- (bool) Включает вывод отладочных логов в stdout
+  # @section -- Supervisor
+  debug: false
+  # -- (string) Deprecated
+  # @section -- Supervisor
+  defaultBranch: main
+
+  image:
+    # -- (string) Имя образа
+    # @section -- Supervisor
+    name: supervisor
+    # -- (string) Тэг образа
+    # @section -- Supervisor
+    tag: ""
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- Supervisor
+    pullPolicy: IfNotPresent
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к подам
+  # @section -- Supervisor
+  annotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к сервисам
+  # @section -- Supervisor
+  serviceAnnotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- Supervisor
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Управляет назначением подов на ноды через механизм tolerations
+  # @section -- Supervisor
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+  # @section -- Supervisor
+  affinity: {}
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- Supervisor
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- Supervisor
+  resources:
+    requests:
+      cpu: 100m
+      memory: 300Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+  # -- (object) Container securityContext
+  # @section -- Supervisor
+  securityContext:
+    runAsUser: 65532
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- Supervisor
+    create: false
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- Supervisor
+    name: ""
+  # -- (object) PodDisruptionBudget
+  # @section -- Supervisor
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+
+visualizer:
+  # -- (bool) Включает деплой сервиса
+  # @section -- Visualizer
+  enabled: true
+  timeoutConfig:
+    # -- (int) Задает максимальное время ожидания ответа клиентом
+    # @section -- Visualizer
+    proxyTimeout: 300
+
+  image:
+    # -- (string) Тэг образа
+    # @section -- Visualizer
+    tag: ""
+    # -- (string) Имя образа
+    # @section -- Visualizer
+    name: visualizer
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- Visualizer
+    pullPolicy: IfNotPresent
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к подам
+  # @section -- Visualizer
+  annotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к сервисам
+  # @section -- Visualizer
+  serviceAnnotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- Visualizer
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Управляет назначением подов на ноды через механизм tolerations
+  # @section -- Visualizer
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+  # @section -- Visualizer
+  affinity: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- Visualizer
+  additionalEnvs: []
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- Visualizer
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- Visualizer
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  service:
+    # @schema
+    # enum:
+    # - ClusterIP
+    # - NodePort
+    # - LoadBalancer
+    # @schema
+    # -- Тип kubernetes сервиса
+    # @section -- Visualizer
+    type: LoadBalancer
+    # @schema
+    # type: ["null", "integer", "string"]
+    # @schema
+    # --  Порт на ноде кластера k8s, на который будет смаплен порт сервиса visualizer. Используется только в случае если service.type=NodePort
+    # @section -- Visualizer
+    nodePort: 
+  ingress:
+    # -- (bool) Включает использование ingress
+    # @section -- Visualizer
+    enabled: false
+    # -- (string) Доменное имя для доступа к веб-интерфейсу
+    # @section -- Visualizer
+    domainName: visualizer.luntry
+    # -- (string) ingress класс
+    # @section -- Visualizer
+    ingressClassName: nginx
+    tls:
+      # -- (bool) Включает использование TLS
+      # @section -- Visualizer
+      enabled: false
+      # -- (string) Имя секрета в namespace Luntry, содержащего TLS-сертификат и ключ
+      # @section -- Visualizer
+      secretName: ""
+  # -- (object) Container securityContext
+  # @section -- Visualizer
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    allowPrivilegeEscalation: false
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- Visualizer
+    create: false
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- Visualizer
+    name: ""
+  # -- (object) PodDisruptionBudget
+  # @section -- Visualizer
+  pdb:
+    enabled: false
+    minAvailable: 1
+
+# Local DB-listing
+vulndb:
+  # -- (bool) Включает деплой сервиса
+  # @section -- VulnDB
+  enabled: false
+  # -- (string) Позволяет указать адрес сервиса vulndb, в случае если доступ к нему осуществляется снаружи кластера. Например через ingress. Адрес должен включать схему, например "https://vdb.corp.loc:8080"
+  # @section -- VulnDB
+  address: ""
+
+  image:
+    # -- (string) Тэг образа
+    # @section -- VulnDB
+    tag: "v6-latest"
+    # -- (string) Имя образа
+    # @section -- VulnDB
+    name: vulndb
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- VulnDB
+    pullPolicy: Always
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к подам
+  # @section -- VulnDB
+  annotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к сервисам
+  # @section -- VulnDB
+  serviceAnnotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- VulnDB
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Управляет назначением подов на ноды через механизм tolerations
+  # @section -- VulnDB
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+  # @section -- VulnDB
+  affinity: {}
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- VulnDB
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- VulnDB
+  resources:
+    requests:
+      cpu: 50m
+      memory: 50Mi
+    limits:
+      cpu: 100m
+      memory: 100Mi
+  service:
+    # @schema
+    # enum:
+    # - ClusterIP
+    # - NodePort
+    # - LoadBalancer
+    # @schema
+    # -- Тип kubernetes сервиса
+    # @section -- VulnDB
+    type: ClusterIP
+    # @schema
+    # type: ["null", "integer", "string"]
+    # @schema
+    # --  Порт на ноде кластера k8s, на который будет смаплен порт сервиса VulnDB. Используется только в случае если service.type=NodePort
+    # @section -- VulnDB
+    nodePort: 
+  ingress:
+    # -- (bool) Включает использование ingress
+    # @section -- VulnDB
+    enabled: false
+    # -- (string) Доменное имя для доступа к VulnDB
+    # @section -- VulnDB
+    domainName: vulndb.luntry
+    # -- (string) ingress класс
+    # @section -- VulnDB
+    ingressClassName: nginx
+    tls:
+      # -- (bool) Включает использование TLS
+      # @section -- VulnDB
+      enabled: false
+      # -- (string) Имя секрета в namespace Luntry, содержащего TLS-сертификат и ключ
+      # @section -- VulnDB
+      secretName: ""
+  # -- (object) Container securityContext
+  # @section -- VulnDB
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    allowPrivilegeEscalation: false
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- VulnDB
+    create: false
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- VulnDB
+    name: ""
+
+watcher:
+  # -- (bool) Включает деплой сервиса
+  # @section -- Watcher
+  enabled: true
+  log:
+    # @schema
+    # enum:
+    # - trace
+    # - debug
+    # - info
+    # - warn
+    # - err
+    # @schema
+    # -- Уровень логирования
+    # @section -- Watcher
+    logLevel: info
+  prometheus:
+    # -- (bool) Включает отображение prometheus метрик для сервиса
+    # @section -- Watcher
+    enabled: false
+  profiling:
+    # -- (bool) Включает профилирование сервиса
+    # @section -- Watcher
+    enabled: false
+  # -- (int) Интервал обновления информации о k8s объектах в секундах. Уменьшение значения может привести к увеличению нагрузки на api-сервер
+  # @section -- Watcher
+  crdRescanInterval: 300
+  # -- (string) Задает namespace для поиска конфигурации подписок на ресурсы
+  # @section -- Watcher
+  searchNamespace: ""
+
+  image:
+    # -- (string) Тэг образа
+    # @section -- Watcher
+    tag: ""
+    # -- (string) Имя образа
+    # @section -- Watcher
+    name: watcher
+    # @schema
+    # enum:
+    # - IfNotPresent
+    # - Always
+    # - Never
+    # @schema
+    # -- imagePullPolicy
+    # @section -- Watcher
+    pullPolicy: IfNotPresent
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к подам
+  # @section -- Watcher
+  annotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Позволяет добавлять аннотации к сервисам
+  # @section -- Watcher
+  serviceAnnotations: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм nodeSelector
+  # @section -- Watcher
+  nodeSelector: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Управляет назначением подов на ноды через механизм tolerations
+  # @section -- Watcher
+  tolerations: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (object) Управляет назначением подов на ноды через механизм affinity / anti-affinity
+  # @section -- Watcher
+  affinity: {}
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- (list) Позволяет добавлять переменные окружения для компонентов
+  # @section -- Watcher
+  additionalEnvs: []
+  # @schema
+  # examples: ["none", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge"]
+  # @schema
+  # -- (string) Пресет ресурсов
+  # @section -- Watcher
+  resourcesPreset: none
+  # -- (object) Запросы / лимиты ресурсов
+  # @section -- Watcher
+  resources:
+    requests:
+      cpu: 100m
+      memory: 400Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  # -- (object) Container securityContext
+  # @section -- Watcher
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    allowPrivilegeEscalation: false
+  serviceAccount:
+    # -- (bool) Включает создание сервис аккаунта
+    # @section -- Watcher
+    create: true
+    # -- (string) Имя существующего сервис аккаунта
+    # @default -- ReleaseName-servicename
+    # @section -- Watcher
+    name: ""
+  # -- (object) RBAC
+  # @section -- Watcher
+  rbac:
+    create: true
+    # Minimal required apiGroups
+    # - apiGroups: ["", "apps", "policy", "batch", "extensions", "networking.k8s.io", "admissionregistration.k8s.io", "apiextensions.k8s.io"]
+    apiGroups: '["*"]'
+    resources: '["*"]'
+    verbs: '[get, list, watch]'
+    allowPolicyEdit:
+      # -- (bool) Включение редактирования сетевых политик
+      # @section -- Watcher
+      network: false
+      # -- (bool) Включение редактирования политик OPA Gatekeeper
+      # @section -- Watcher
+      opa: false
+      # -- (bool) Включение редактирования политик Kyverno
+      # @section -- Watcher
+      kyverno: false
+  # -- (object) PodDisruptionBudget
+  # @section -- Watcher
+  pdb:
+    enabled: false
+    minAvailable: 1
+
+# -- (list) Дополнительные манифесты для деплоя вместе с чартом
+extraObjects: []
+
+#develop block is used for fine tuning/debugging purposes. Do not change any values except you know what you are doing.
+# @ignored
+develop:
+  encryption_string: "N5U7Ni2nKMHiHSs43hUhWT2Q2s9vXKv2"
+  dbwait:
+    # What to check awaitEndpoint / tablesCheck / migration id
+    observationStrategy:
+      db:
+        type: "tablesCheck"
+        tablesRecvMethod: "envVar"
+        tableList: "kubernetes_objects,kubernetes_history_objects"
+      gateway:
+        type: "awaitEndpoint"
+      watcher:
+        type: "awaitEndpoint"
+      policier:
+        type: "awaitEndpoint"
+      collector:
+        type: "awaitEndpoint"
+      charon:
+        type: "awaitEndpoint"
+      dataProvider:
+        type: "awaitEndpoint"
+    migrationDsn: ""
+    maxBackoffs: 30
+    backoffIntervalSec: 20
+    delay: "0"
+  sensor:
+    healthCheck:
+      disabled: false
+      period: 60
+    criRuntimeEndpoint: ""
+    dockerSocket: ""
+    stub: ""
+    kernelDir: ""
+    useClang18: "0"
+    ignoreUnreadyThreads: "0"
+    allowUnconvergedThreads: "0"
+  kafka:
+    profiler:
+      enabled: false
+    ssl:
+      enabled: false
+      secretName: ""
+    auth:
+      enabled: true
+    credentials:
+      broker:
+        username: "inter_broker_user"
+        password: "7kqH8WujUF6EYD2S"
+      controller:
+        username: "controller_user"
+        password: "aiQbyTM0uHtZB6Xd"
+    clusterId: "luntry-cmnd-BHGISNDQ2xpgZuDA"
+  postgres:
+    tls:
+      secretName: ""
+  clickhouse:
+    shardId: "shard0"
+    replicaId: "first"

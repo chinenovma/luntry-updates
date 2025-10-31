@@ -1,0 +1,214 @@
+{{- $app := .Values.collector -}}
+{{- if $app.enabled -}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-collector
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-collector
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  replicas: {{ $app.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Release.Name }}-collector
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: {{ .Release.Name }}-collector
+        {{- include "common.labels" . | nindent 8 }}
+      {{- if or .Values.monitoring.prometheusOperatorAnnotations.enabled $app.annotations .Values.databaseConnectionConfiguration.kafka.bankVaultsInjector.enabled }}
+      annotations:
+        {{- if .Values.monitoring.prometheusOperatorAnnotations.enabled }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: metrics
+        {{- end }}
+        {{- if $app.annotations }}
+        {{- toYaml $app.annotations | nindent 8 }}
+        {{- end }}
+        {{- if .Values.databaseConnectionConfiguration.kafka.bankVaultsInjector.enabled }}
+        {{- toYaml .Values.databaseConnectionConfiguration.bankVaultsInjectorAnnotations | nindent 8 }}
+        {{- end}}
+      {{- end }}
+    spec:
+      {{- with $app.nodeSelector}}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if or $app.serviceAccount.create $app.serviceAccount.name }}
+      serviceAccountName: {{ quote (default (printf "%s-%s" .Release.Name "collector") $app.serviceAccount.name) }}
+      {{- end }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: {{ .Release.Name }}-collector
+                  {{- include "common.labels" . | nindent 18 }}
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: collector
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ $app.image.name }}:{{ $app.image.tag | default .Values.allTag }}"
+          imagePullPolicy: {{ $app.image.pullPolicy }}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" $app.securityContext "context" $) | nindent 12 }}
+          {{- if ne $app.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" $app.resourcesPreset) | nindent 12 }}
+          {{- else if ne .Values.globalResourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.globalResourcesPreset) | nindent 12 }}
+          {{- else }}
+          resources:
+            {{- toYaml $app.resources | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: grpc
+              containerPort: 31337
+            - name: probe-port
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              port: probe-port
+              path: /ready
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              port: probe-port
+              path: /health
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          env:
+            {{- range $app.additionalEnvs }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+            {{- include "kafka.envs" . | nindent 12 }}
+            {{- include "logFormat.envs" . | nindent 12 }}
+            {{- if eq $app.fallbackBuffer.type "local" }}
+            - name: FALLBACK_BUFFER_SIZE
+              value: {{ $app.fallbackBuffer.local.bufferSize | quote }}
+            - name: FALLBACK_EVENTS_PER_FILE
+              value:  {{ $app.fallbackBuffer.local.eventsPerFile | quote }}
+            - name: FALLBACK_TOTAL_MEMORY_LIMIT_MB
+              value: {{ $app.fallbackBuffer.local.memoryLimit | quote }}
+            {{- end }}
+            - name: FALLBACK_BUFFER_BACKEND 
+              value: {{ $app.fallbackBuffer.type | quote }}
+            - name: HTTP_ADDR
+              value: ":8080"
+            - name: DRIVER
+              value: "gateway"
+            - name: WATCHER_ADDR
+              value: {{ include "watcherEndpoint" . | quote }}
+            - name: GATEWAY_SERVICE_ADDR
+              value: {{ include "gatewayEndpoint" . | quote }}
+            - name: GATEWAY_SERVICE_POLICY_ADDR
+              value: {{ include "gatewayEndpoint" . | quote }}
+            - name: GATEWAY_SSL_ENABLED
+              value: {{ .Values.gateway.tls.enabled | quote }}
+            - name: GATEWAY_SSL_CA_PATH
+              value: "/usr/share/ca-certificates/gateway-ca.crt"
+            - name: EXPORTER_SERVICE_ADDR
+              value: {{ include "exporterHost" . | quote }}
+            - name: NETWORKER_SERVICE_ADDR
+              value: {{ include "networkerHost" . | quote }}
+            - name: PENDING_EVENTS_LIMIT
+              value: {{ $app.pendingEventsLimit | quote }}
+            - name: LOG_LEVEL
+              value: {{ $app.log.logLevel | quote }}
+            - name: PROM
+              value: {{ (or $app.prometheus.enabled .Values.monitoring.enabled) | quote }}
+            - name: PROF
+              value: {{ $app.profiling.enabled | quote }}
+            - name: MAX_RECV_MSG_SIZE
+              value: {{ $app.maxMsgSize | quote }}
+            - name: EXPORTER_SSL_ENABLED
+              value: {{ .Values.exporter.tls.enabled | quote }}
+            - name: EXPORTER_SSL_CA_PATH
+              value: "/usr/share/ca-certificates/exporter-ca.crt"
+            - name: ENCRYPTION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-encryption-secret
+                  key: ENCRYPTION_STRING
+          {{- if or .Values.exporter.tls.enabled .Values.gateway.tls.enabled .Values.databaseConnectionConfiguration.kafka.ssl.enabled (eq $app.fallbackBuffer.type "local")  }}
+          volumeMounts:
+            {{- if eq $app.fallbackBuffer.type "local" }}
+            - mountPath: /tmp
+              name: tmp
+            {{- end }}
+            {{- include "kafka.ssl.volumeMount" . | nindent 12 }}
+            {{- include "gateway.tls.volumeMount" . | nindent 12 }}
+            {{- include "exporter.tls.volumeMount" . | nindent 12 }}
+          {{- end }}
+      {{- if .Values.dbwait.enabled }}
+      initContainers:
+        - name: db-wait
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ .Values.dbwait.image.name }}:{{ .Values.dbwait.image.tag  | default .Values.allTag }}"
+          imagePullPolicy: {{ .Values.dbwait.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.dbwait.resources | nindent 12 }}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" .Values.dbwait.securityContext "context" $) | nindent 12 }}
+          env:
+            - name: OBSERVATION_STRATEGY
+              value: {{ .Values.develop.dbwait.observationStrategy.policier.type | quote }}
+            - name: AWAIT_ENDPOINT
+              value: {{ include "policierAwaitEndpoint" . | quote }}
+            - name: BACKOFF_INTERVAL_SEC
+              value: {{ .Values.develop.dbwait.backoffIntervalSec | quote }}
+            - name: MAX_BACKOFFS
+              value: {{ .Values.develop.dbwait.maxBackoffs | quote }}
+      {{- end }}
+      {{- if or .Values.exporter.tls.enabled .Values.gateway.tls.enabled .Values.databaseConnectionConfiguration.kafka.ssl.enabled (eq $app.fallbackBuffer.type "local") }}
+      volumes:
+        {{- if eq ($app.pvc.type | lower) "emptydir"}}
+        - name: tmp
+          emptyDir:
+            sizeLimit: {{ $app.pvc.size }}
+        {{- else if eq ($app.pvc.type | lower) "genericephemeralvolume" }}
+        - name: tmp
+          ephemeral:
+            volumeClaimTemplate:
+              spec:
+                accessModes: ["ReadWriteOnce"]
+                storageClassName: {{ $app.pvc.storageClass }}
+                resources:
+                  requests:
+                    storage: {{ $app.pvc.size | quote }}
+        {{- else }}
+          {{- fail "incorrect volume type in collector.pvc.type" }}
+        {{- end }}
+        {{- include "kafka.ssl.volume" . | nindent 8 }}
+        {{- include "gateway.tls.volume" . | nindent 8 }}
+        {{- include "exporter.tls.volume" . | nindent 8 }}
+      {{- end }}
+      {{- include "imagePullSecrets" . | nindent 6 }}
+
+{{- if and $app.pdb.enabled (.Capabilities.APIVersions.Has "policy/v1") }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}-collector
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-collector
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ $app.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Release.Name }}-collector
+      app.kubernetes.io/part-of: {{ .Chart.Name }}
+{{- end }}
+{{- end }}

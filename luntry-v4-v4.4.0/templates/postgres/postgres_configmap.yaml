@@ -1,0 +1,40 @@
+{{- if .Values.postgres.enabled -}}
+{{- if or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main")) -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-db-provision
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: {{ .Release.Name }}-postgres
+data:
+  {{- if and .Values.databaseConnectionConfiguration.postgres.tls.enabled .Values.develop.postgres.tls.secretName }}
+  pghba: |
+    local all all trust
+    hostssl all all all scram-sha-256
+    hostnossl all all all reject
+  {{- end }}
+  0provision.sh: |
+    #!/bin/bash
+    set -e
+    POSTGRES_USER='postgres'
+
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<EOSQL
+      CREATE EXTENSION pg_stat_statements;
+
+      CREATE USER $MIGRATOR_USER WITH PASSWORD '$MIGRATOR_PASSWORD';
+      CREATE GROUP LUNTRY WITH USER $MIGRATOR_USER;
+
+      CREATE DATABASE $COLLECTOR_DATABASE OWNER LUNTRY;
+      GRANT ALL PRIVILEGES ON DATABASE $COLLECTOR_DATABASE to LUNTRY;
+
+      \c $COLLECTOR_DATABASE
+      ALTER SCHEMA public OWNER TO LUNTRY;
+      ALTER DEFAULT PRIVILEGES FOR ROLE $MIGRATOR_USER GRANT ALL PRIVILEGES ON TABLES TO LUNTRY;
+      ALTER DEFAULT PRIVILEGES FOR ROLE $MIGRATOR_USER GRANT ALL PRIVILEGES ON SEQUENCES TO LUNTRY;
+      ALTER DEFAULT PRIVILEGES FOR ROLE $MIGRATOR_USER GRANT ALL PRIVILEGES ON FUNCTIONS TO LUNTRY;
+    EOSQL
+{{- end }}
+{{- end }}

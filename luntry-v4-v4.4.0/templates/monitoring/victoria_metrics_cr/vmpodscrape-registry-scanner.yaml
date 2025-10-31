@@ -1,0 +1,18 @@
+{{- if and .Values.imageScanner.enabled .Values.imageScanner.mode.registry ( or .Values.monitoring.enabled .Values.imageScanner.prometheus.enabled ) .Values.monitoring.victoriaMetricsScrapeCR.enabled }}
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMPodScrape
+metadata:
+  name: "registry-scanner"
+  namespace: {{ .Release.Namespace }}
+spec:
+  podMetricsEndpoints:
+    - port: http
+      scheme: http
+  jobLabel: "app.kubernetes.io/component"
+  namespaceSelector:
+    matchNames: [{{ .Release.Namespace | quote }}]
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Release.Name }}-registry-scanner
+{{- end }}

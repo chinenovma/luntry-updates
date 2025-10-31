@@ -1,0 +1,191 @@
+{{- $app := .Values.cmdDispatcher -}}
+{{- if $app.enabled -}}
+{{- if or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main")) -}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-cmd-dispatcher
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-cmd-dispatcher
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Release.Name }}-cmd-dispatcher
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: {{ .Release.Name }}-cmd-dispatcher
+        {{- include "common.labels" . | nindent 8 }}
+      {{- if or .Values.monitoring.prometheusOperatorAnnotations.enabled $app.annotations .Values.databaseConnectionConfiguration.postgres.bankVaultsInjector.enabled .Values.databaseConnectionConfiguration.redis.bankVaultsInjector.enabled }}
+      annotations:
+        {{- if .Values.monitoring.prometheusOperatorAnnotations.enabled }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: metrics
+        {{- end }}
+        {{- if or .Values.databaseConnectionConfiguration.postgres.bankVaultsInjector.enabled .Values.databaseConnectionConfiguration.redis.bankVaultsInjector.enabled }}
+        {{- toYaml .Values.databaseConnectionConfiguration.bankVaultsInjectorAnnotations | nindent 8 }}
+        {{- end }}
+        {{- if $app.annotations }}
+        {{- toYaml $app.annotations | nindent 8 }}
+        {{- end }}
+      {{- end }}
+    spec:
+      {{- with $app.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if or $app.serviceAccount.create $app.serviceAccount.name }}
+      serviceAccountName: {{ quote (default (printf "%s-%s" .Release.Name "cmd-dispatcher") $app.serviceAccount.name) }}
+      {{- end }}
+      containers:
+        - name: cmd-dispatcher
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ $app.image.name }}:{{ $app.image.tag  | default .Values.allTag }}"
+          imagePullPolicy: {{ $app.image.pullPolicy }}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" $app.securityContext "context" $) | nindent 12 }}
+          {{- if ne $app.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" $app.resourcesPreset) | nindent 12 }}
+          {{- else if ne .Values.globalResourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.globalResourcesPreset) | nindent 12 }}
+          {{- else }}
+          resources:
+            {{- toYaml $app.resources | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: grpc
+              containerPort: 3338
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              port: http
+              path: /ready
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              port: http
+              path: /health
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          env:
+            {{- range $app.additionalEnvs }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+            {{- include "postgres.hostPortDbSsl" . | nindent 12 }}
+            {{- include "postgres.envs" . | nindent 12 }}
+            {{- include "redis.pass" . | nindent 12 }}
+            {{- include "proxy.envs" . | indent 12 }}
+            {{- include "logFormat.envs" . | nindent 12 }}
+            - name: REDIS_ADDR
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-luntry-config
+                  key: REDIS_HOST
+            - name: LOG_LEVEL
+              value: {{ $app.log.level | quote }}
+            - name: PROM
+              value: {{ (or $app.prometheus.enabled .Values.monitoring.enabled) | quote }}
+            - name: PROF
+              value: {{ $app.profiling.enabled | quote }}
+            - name: DISPATCHER_HTTP_ADDR
+              value: "0.0.0.0:8080"
+            - name: CMD_DISPATCHER_GRPC_PORT
+              value: "3338"
+            - name: ENCRYPTION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-encryption-secret
+                  key: ENCRYPTION_STRING
+            - name: PROGRESS_TTL
+              value: "48h0m0s"
+            - name: SCHEDULING_DURATION
+              value: "2m0s"
+            - name: HANDLE_SCHEDULING_TIMEOUT_DURATION
+              value: "30s"
+            - name: DISPATCHER_GRPC_SERVER_MAX_RCV_MSG_SIZE
+              value: "52428800"
+            - name: CMD_DISPATCHER_SSL_ENABLED
+              value: {{ $app.tls.enabled | quote }}
+            {{- if $app.tls.enabled }}
+            - name: CMD_DISPATCHER_SSL_CERT_PATH
+              value: "/usr/share/ca-certificates/tls.crt"
+            - name: CMD_DISPATCHER_SSL_KEY_PATH
+              value: "/usr/share/ca-certificates/tls.key"
+            {{- end }}
+            {{- if or .Values.caBundle.crtBase64 .Values.caBundle.secretName }}
+            - name: SSL_CERT_DIR
+              value: /usr/share/ca-certificates
+            {{- end }}
+          {{- if or .Values.databaseConnectionConfiguration.postgres.tls.enabled $app.tls.enabled }}
+          volumeMounts:
+            {{- include "pg.tls.volumeMount" . | nindent 12 }}
+            {{- include "caBundle.volumeMount" . | nindent 12 }}
+            {{- if $app.tls.enabled }}
+            - name: cmd-tls
+              mountPath: /usr/share/ca-certificates/tls.crt
+              subPath: tls-crt
+            - name: cmd-tls
+              mountPath: /usr/share/ca-certificates/tls.key
+              subPath: tls-key
+            {{- end }}
+          {{- end }}
+      {{- if .Values.dbwait.enabled }}
+      initContainers:
+        - name: db-wait
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ .Values.dbwait.image.name }}:{{ .Values.dbwait.image.tag  | default .Values.allTag }}"
+          imagePullPolicy: {{ .Values.dbwait.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.dbwait.resources | nindent 12 }}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" .Values.dbwait.securityContext "context" $) | nindent 12 }}
+          env:
+            - name: OBSERVATION_STRATEGY
+              value: {{ .Values.develop.dbwait.observationStrategy.watcher.type | quote }}
+            - name: AWAIT_ENDPOINT
+              value: {{ include "watcherAwaitEndpoint" . | quote }}
+            - name: BACKOFF_INTERVAL_SEC
+              value: {{ .Values.develop.dbwait.backoffIntervalSec | quote }}
+            - name: MAX_BACKOFFS
+              value: {{ .Values.develop.dbwait.maxBackoffs | quote }}
+            - name: SSL_ENABLED
+              value: {{ .Values.gateway.tls.enabled | quote }}
+            - name: SSL_CA_PATH
+              value: "/usr/share/ca-certificates/gateway-ca.crt"
+          {{- if .Values.gateway.tls.enabled }}
+          volumeMounts:
+            {{- include "gateway.tls.volumeMount" . | nindent 12 }}
+          {{- end }}
+      {{- end }}
+      {{- if or .Values.databaseConnectionConfiguration.postgres.tls.enabled $app.tls.enabled }}
+      volumes:
+        {{- include "pg.tls.volume" . | nindent 8 }}
+        {{- include "gateway.tls.volume" . | nindent 8 }}
+        {{- if $app.tls.enabled }}
+        - name: cmd-tls
+          secret:
+            secretName: {{ $app.tls.crt.secretName | default (printf "%s-%s" .Release.Name "cmd-dispatcher-tls") }}
+            items:
+              - key: tls.crt
+                path: tls-crt
+              - key: tls.key
+                path: tls-key
+        {{- end }}
+      {{- end }}
+      {{- include "imagePullSecrets" . | nindent 6 }}
+{{- end }}
+{{- end }}

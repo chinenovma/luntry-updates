@@ -1,0 +1,11 @@
+{{- if and (.Values.kafka.enabled) (.Values.kafka.serviceAccount.create) -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ quote (default (printf "%s-%s" .Release.Name "kafka") .Values.kafka.serviceAccount.name) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-kafka
+    {{- include "common.labels" . | nindent 4 }}
+{{- end }}

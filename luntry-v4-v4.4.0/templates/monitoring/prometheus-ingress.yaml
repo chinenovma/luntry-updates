@@ -1,0 +1,62 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.prometheus.enabled .Values.monitoring.prometheus.ingress.enabled -}}
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" -}}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-prometheus-ingress
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-prometheus-ingress
+    {{- include "common.labels" . | nindent 4 }}
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+spec:
+  {{- if .Values.monitoring.prometheus.ingress.tls.enabled }}
+  tls:
+  - hosts:
+    - {{ .Values.monitoring.prometheus.ingress.domainName }}
+      secretName: {{ .Values.monitoring.prometheus.ingress.tls.secretName }}
+  {{- end }}
+  ingressClassName: {{ .Values.monitoring.prometheus.ingress.ingressClassName }}
+  rules:
+  - host: {{ (.Values.monitoring.prometheus.ingress.domainName | default "prometheus.luntry") | quote }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}-prometheus
+            port:
+              number: 9090
+{{- else if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1/Ingress" -}}
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-prometheus-ingress
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-prometheus-ingress
+    {{- include "common.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.monitoring.prometheus.ingress.ingressClassName }}
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+spec:
+  {{- if .Values.monitoring.prometheus.ingress.tls.enabled }}
+  tls:
+  - hosts:
+    - {{ .Values.monitoring.prometheus.ingress.domainName }}
+      secretName: {{ .Values.monitoring.prometheus.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+  - host: {{ (.Values.monitoring.prometheus.ingress.domainName | default "prometheus.luntry") | quote }}
+    http:
+      paths:
+      - backend:
+            serviceName: {{ .Release.Name }}-prometheus
+            servicePort: 9090
+{{- end }}
+{{- end }}

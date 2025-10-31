@@ -1,0 +1,46 @@
+{{- if .Values.watcher.enabled -}}
+{{- $saname := default (printf "%s-%s" .Release.Name "watcher") .Values.watcher.serviceAccount.name -}}
+{{- if .Values.watcher.serviceAccount.create -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ quote $saname }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-watcher
+    {{- include "common.labels" . | nindent 4 }}
+{{- end }}
+{{- if .Values.watcher.rbac.create }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Release.Name }}-watcher
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-watcher
+    {{- include "common.labels" . | nindent 4 }}
+rules:
+  - apiGroups: {{ .Values.watcher.rbac.apiGroups }}
+    resources: {{ .Values.watcher.rbac.resources }}
+    verbs: {{ .Values.watcher.rbac.verbs }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Release.Name }}-watcher
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-watcher
+    {{- include "common.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ .Release.Name }}-watcher
+subjects:
+  - kind: ServiceAccount
+    name: {{ quote $saname }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}
+{{- end }}

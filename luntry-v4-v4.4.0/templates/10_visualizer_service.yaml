@@ -1,0 +1,26 @@
+{{- if and (.Values.visualizer.enabled) (or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main"))) -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-visualizer
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-visualizer
+    {{- include "common.labels" . | nindent 4 }}
+  {{- if .Values.visualizer.serviceAnnotations }}
+  annotations:
+    {{- toYaml .Values.visualizer.serviceAnnotations | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    app.kubernetes.io/component: {{ .Release.Name }}-visualizer
+  type: {{ .Values.visualizer.service.type }}
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+      {{- if and (eq .Values.visualizer.service.type "NodePort") .Values.visualizer.service.nodePort }}
+      nodePort: {{ .Values.visualizer.service.nodePort }}
+      {{- end }}
+{{- end }}

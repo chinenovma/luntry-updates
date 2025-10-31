@@ -1,0 +1,318 @@
+exporter:
+  export:
+    targets:
+      alertmanager:
+        hostPort: ""
+        mutualTls: false
+        checkCert: false
+        endpoint: "/api/v1/alerts"
+        expiresAfter: "0"
+      aws:
+        accessKeyId: ""
+        secretAccessKey: ""
+        region: ""
+        roleArn: ""
+        externalId: ""
+        checkIdentity: true
+        lambda:
+          functionName: ""
+        sqs:
+          url: ""
+        sns:
+          topicArn: ""
+          rawJson: false
+        cloudWatchLogs:
+          logGroup: ""
+          logStream: ""
+        s3:
+          bucket: ""
+          prefix: ""
+        securityLake:
+          bucket: ""
+          region: ""
+          prefix: ""
+          accountId: ""
+          interval: 5
+          batchSize: 1000
+        kinesis:
+          streamName: ""
+      azure:
+        eventHub:
+          name: ""
+          namespace: ""
+      cliq:
+        icon: ""
+        messageFormat: 'Alert : rule *{{ .Rule }}* triggered by user *{{ index .OutputFields "user.name" }}*'
+        outputFormat: "all"
+        useEmoji: true
+        webhookUrl: ""
+      cloudevents:
+        address: ""
+        checkCert: false
+        extensions: {}
+        mutualTls: false
+      datadog:
+        apiKey: ""
+        host: ""
+      discord:
+        icon: ""
+        webhookUrl: ""
+      dogstatsd:
+        forwarder: ""
+        namespace: "luntry."
+      elasticSearch:
+        checkCert: false
+        CustomHeaders: {}
+        hostPort: ""
+        index: "luntry"
+        password: ""
+        suffix: "daily"
+        type: "_doc"
+        username: ""
+      fission:
+        function: ""
+        routerNamespace: "fission"
+        routerService: "router"
+        routerPort: 80
+        checkCert: false
+        mutualTls: false
+      gcp:
+        credentials: ""
+        cloudFunctions:
+          name: ""
+        cloudRun:
+          endpoint: ""
+          jwt: ""
+        pubsub:
+          projectId: ""
+          topic: ""
+        storage:
+          bucket: ""
+          prefix: ""
+      googlechat:
+        webhookUrl: ""
+        messageFormat: 'Alert : rule *{{ .Rule }}* triggered by user *{{ index .OutputFields "user.name" }}*'
+        outputFormat: ""
+      gotify:
+        hostPort: ""
+        token: ""
+        format: "markdown"
+        checkCert: false
+      grafana:
+        hostPort: ""
+        apiKey: ""
+        dashboardId: ""
+        panelId: ""
+        allFieldsAsTags: false
+        mutualTls: false
+        checkCert: false
+        CustomHeaders: {}
+      grafanaoncall:
+        webhookUrl: ""
+        mutualTls: false
+        checkCert: false
+        CustomHeaders: {}
+      influxdb:
+        hostPort: ""
+        database: "luntry"
+        organization: ""
+        bucket: "luntry"
+        precision: "ns"
+        user: ""
+        password: ""
+        token: ""
+        mutualTls: false
+        checkCert: false
+      kafka:
+        hostPort: ""
+        topic: ""
+        sasl: ""
+        tls: false
+        username: ""
+        password: ""
+        async: false
+        requiredAcks: "NONE"
+        compression: "NONE"
+        balancer: "round_robin"
+        clientId: ""
+        topicCreation: false
+      kafkarest:
+        address: ""
+        version: 2
+        mutualTls: false
+        checkCert: false
+      kubeless:
+        function: ""
+        namespace: ""
+        port: 8080
+        kubeconfig: "~/.kube/config"
+        mutualTls: false
+        checkCert: false
+      loki:
+        hostPort: ""
+        user: ""
+        apiKey: ""
+        checkCert: false
+        tenant: ""
+        endpoint: "/api/prom/push"
+        extraLabels: ""
+        CustomHeaders: {}
+      mattermost:
+        webhookUrl: ""
+        footer: ""
+        icon: ""
+        username: ""
+        outputFormat: "all"
+        messageFormat: "Alert : rule **{{ .Rule }}** triggered by user **{{ index .OutputFields \"user.name\" }}**"
+        mutualTls: false
+        checkCert: false
+      mqtt:
+        broker: ""
+        topic: "luntry/events"
+        qos: 0
+        retained: false
+        user: ""
+        password: ""
+        checkCert: false
+      n8n:
+        address: ""
+        user: ""
+        password: ""
+        headerAuthName: ""
+        headerAuthValue: ""
+        checkCert: false
+      nats:
+        hostPort: ""
+        mutualTls: false
+        checkCert: false
+      nodered:
+        address: ""
+        user: ""
+        password: ""
+        CustomHeaders: {}
+        checkCert: false
+      openfaas:
+        functionName: ""
+        functionNamespace: "openfaas-fn"
+        gatewayService: "gateway"
+        gatewayPort: 8080
+        gatewayNamespace: "openfaas"
+        kubeconfig: "~/.kube/config"
+        mutualTls: false
+        checkCert: false
+      openobserve:
+        hostPort: ""
+        organizationName: "default"
+        streamName: "luntry"
+        mutualTls: false
+        checkCert: false
+        username: ""
+        password: ""
+        CustomHeaders: {}
+      opsgenie:
+        apiKey: ""
+        region: "eu"
+      pagerduty:
+        routingKey: ""
+        region: "us"
+      rabbitmq:
+        url: ""
+        queue: ""
+      redis:
+        address: ""
+        password: ""
+        database: 0
+        storageType: "list"
+        key: "luntry"
+      rocketchat:
+        webhookUrl: ""
+        icon: ""
+        username: ""
+        outputFormat: "all"
+        messageFormat: "Alert : rule *{{ .Rule }}* triggered by user *{{ index .OutputFields \"user.name\" }}*"
+        mutualTls: false
+        checkCert: false
+      slack:
+        webhookUrl: ""
+        channel: ""
+        footer: ""
+        icon: ""
+        username: ""
+        outputFormat: "all"
+        messageFormat: 'Alert : rule *{{ .Rule }}* triggered by user *{{ index .OutputFields "user.name" }}*'
+      smtp:
+        hostPort: ""
+        tls: false
+        authMechanism: "plain"
+        user: ""
+        password: ""
+        token: ""
+        identity: ""
+        trace: ""
+        from: ""
+        to: ""
+        outputFormat: "html"
+      spyderbat:
+        orgUid: ""
+        apiKey: ""
+        apiUrl: ""
+        source: "luntry"
+        sourceDescription: ""
+      stan:
+        hostPort: ""
+        clusterId: ""
+        clientId: ""
+        mutualTls: false
+        checkCert: false
+      statsd:
+        forwarder: ""
+        namespace: "luntry."
+      teams:
+        webhookUrl: ""
+        activityImage: ""
+        outputFormat: "all"
+      tekton:
+        eventListener: ""
+        checkCert: false
+      telegram:
+        token: ""
+        chatId: ""
+        checkCert: false
+      timescaledb:
+        host: ""
+        port: "5432"
+        user: "postgres"
+        password: "postgres"
+        database: ""
+        hyperTableName: "luntry_events"
+      wavefront:
+        endpointType: ""
+        endpointHost: ""
+        endpointToken: ""
+        endpointMetricPort: 2878
+        metricName: "luntry.alert"
+        batchSize: 10000
+        flushIntervalSeconds: 1
+      webhook:
+        address: ""
+        CustomHeaders: {}
+        method: ""
+        mutualTls: false
+        checkCert: false
+      yandex:
+        accessKeyId: ""
+        secretAccessKey: ""
+        region: "ru-central-1"
+        s3:
+          endpoint: ""
+          bucket: ""
+          prefix: ""
+        datastreams:
+          endpoint: ""
+          streamName: ""
+      zincsearch:
+        hostPort: ""
+        index: "luntry"
+        username: ""
+        password: ""
+        checkCert: false

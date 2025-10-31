@@ -1,0 +1,18 @@
+{{- if and .Values.clickhouse.enabled ( or .Values.monitoring.enabled .Values.clickhouse.prometheus.enabled ) .Values.monitoring.victoriaMetricsScrapeCR.enabled }}
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMPodScrape
+metadata:
+  name: "clickhouse"
+  namespace: {{ .Release.Namespace }}
+spec:
+  podMetricsEndpoints:
+    - port: metrics
+      scheme: http
+  jobLabel: "app.kubernetes.io/component"
+  namespaceSelector:
+    matchNames: [{{ .Release.Namespace | quote }}]
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Release.Name }}-clickhouse
+{{- end }}

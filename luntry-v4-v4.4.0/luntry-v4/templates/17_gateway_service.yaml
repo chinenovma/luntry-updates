@@ -1,0 +1,31 @@
+{{- if .Values.gateway.enabled -}}
+{{- if or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main")) -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-gateway
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-gateway
+    {{- include "common.labels" . | nindent 4 }}
+  {{- if .Values.gateway.serviceAnnotations }}
+  annotations:
+    {{- toYaml .Values.gateway.serviceAnnotations | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    app.kubernetes.io/component: {{ .Release.Name }}-gateway
+  type: {{ .Values.gateway.service.type }}
+  ports:
+    - name: grpc
+      protocol: TCP
+      port: 43100
+      {{- if and (eq .Values.gateway.service.type "NodePort") (.Values.gateway.service.nodePort)}}
+      nodePort: {{ .Values.gateway.service.nodePort }}
+      {{- end }}
+    - name: probe
+      protocol: TCP
+      port: 8080
+{{- end }}
+{{- end }}

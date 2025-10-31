@@ -1,0 +1,152 @@
+{{- if .Values.watcher.enabled -}}
+{{- $saname := default (printf "%s-%s" .Release.Name "watcher") .Values.watcher.serviceAccount.name -}}
+{{- if .Values.watcher.serviceAccount.create -}}
+{{- if .Values.watcher.rbac.allowPolicyEdit.network }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Release.Name }}-watcher-np
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-watcher
+    {{- include "common.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+    - networking.k8s.io
+    resources:
+    - NetworkPolicy
+    - networkpolicies
+    verbs:
+    - create
+    - update
+    - delete
+  # For work with Cilium NetworkPolicy
+  - apiGroups:
+    - cilium.io
+    resources:
+    - CiliumNetworkPolicy
+    - CiliumClusterwideNetworkPolicy
+    - ciliumnetworkpolicies
+    verbs:
+    - create
+    - update
+    - delete
+  # For work with Calico NetworkPolicy
+  - apiGroups:
+    - crd.projectcalico.org
+    resources:
+    - NetworkPolicy
+    - GlobalNetworkPolicy
+    - globalnetworkpolicies
+    - networkpolicies
+    verbs:
+    - create
+    - update
+    - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Release.Name }}-watcher-np
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-watcher
+    {{- include "common.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ .Release.Name }}-watcher-np
+subjects:
+  - kind: ServiceAccount
+    name: {{ quote $saname }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}
+{{- if .Values.watcher.rbac.allowPolicyEdit.opa }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Release.Name }}-watcher-opa
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-watcher
+    {{- include "common.labels" . | nindent 4 }}
+rules:
+    # For work with OPA Gatekeeper policies
+  - apiGroups:
+    - templates.gatekeeper.sh
+    resources:
+    - constrainttemplates
+    verbs:
+    - create
+    - update
+    - delete
+  - apiGroups:
+    - constraints.gatekeeper.sh
+    resources:
+    -  '*'
+    verbs:
+    - create
+    - update
+    - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Release.Name }}-watcher-opa
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-watcher
+    {{- include "common.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ .Release.Name }}-watcher-opa
+subjects:
+  - kind: ServiceAccount
+    name: {{ quote $saname }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}
+{{- if .Values.watcher.rbac.allowPolicyEdit.kyverno }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Release.Name }}-watcher-kyverno
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-watcher
+    {{- include "common.labels" . | nindent 4 }}
+rules:
+    # For work with Kyverno policies
+  - apiGroups:
+    - kyverno.io
+    resources:
+    - Policy
+    - ClusterPolicy
+    - clusterpolicies
+    verbs:
+    - create
+    - update
+    - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Release.Name }}-watcher-kyverno
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-watcher
+    {{- include "common.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ .Release.Name }}-watcher-kyverno
+subjects:
+  - kind: ServiceAccount
+    name: {{ quote $saname }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}
+{{- end }}
+{{- end }}

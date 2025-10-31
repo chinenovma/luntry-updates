@@ -1,0 +1,18 @@
+{{- if and .Values.redis.enabled ( or .Values.monitoring.enabled .Values.redis.metricExporter.enabled ) .Values.monitoring.victoriaMetricsScrapeCR.enabled }}
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMPodScrape
+metadata:
+  name: "redis"
+  namespace: {{ .Release.Namespace }}
+spec:
+  podMetricsEndpoints:
+    - port: metrics
+      scheme: http
+  jobLabel: "app.kubernetes.io/component"
+  namespaceSelector:
+    matchNames: [{{ .Release.Namespace | quote }}]
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Release.Name }}-redis
+{{- end }}

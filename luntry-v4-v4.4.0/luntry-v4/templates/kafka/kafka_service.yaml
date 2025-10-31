@@ -1,0 +1,52 @@
+{{- if .Values.kafka.enabled -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-kafka
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-kafka
+    {{- include "common.labels" . | nindent 4 }}
+  {{- if .Values.kafka.serviceAnnotations }}
+  annotations:
+    {{- toYaml .Values.kafka.serviceAnnotations | nindent 4 }}
+  {{- end }}
+spec:
+  ports:
+  - port: 9092
+    name: kafka
+  {{- if .Values.develop.kafka.profiler.enabled }}
+  - port: 8099
+    name: profiler
+  type: NodePort
+  {{- end }}
+  selector:
+    app.kubernetes.io/component: {{ .Release.Name }}-kafka
+{{- if and .Values.kafka.console.enabled .Values.kafka.console.service.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-kafka-console
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-kafka-console
+    {{- include "common.labels" . | nindent 4 }}
+  {{- if .Values.kafka.serviceAnnotations }}
+  annotations:
+    {{- toYaml .Values.kafka.serviceAnnotations | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.kafka.console.service.type }}
+  ports:
+  - port: 8081
+    name: console
+    targetPort: 8081
+    {{- if and (eq .Values.kafka.console.service.type "NodePort") .Values.kafka.console.service.nodePort }}
+    nodePort: {{ .Values.kafka.console.service.nodePort }}
+    {{- end }}
+  selector:
+    app.kubernetes.io/component: {{ .Release.Name }}-kafka
+{{- end }}
+{{- end }}

@@ -1,0 +1,22 @@
+{{- if and (.Values.dataProvider.enabled) (or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main"))) -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-data-provider
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-data-provider
+    {{- include "common.labels" . | nindent 4 }}
+  {{- if .Values.dataProvider.serviceAnnotations }}
+  annotations:
+    {{- toYaml .Values.dataProvider.serviceAnnotations | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    app.kubernetes.io/component: {{ .Release.Name }}-data-provider
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+{{- end }}

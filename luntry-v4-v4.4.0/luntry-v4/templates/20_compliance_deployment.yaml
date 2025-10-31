@@ -1,0 +1,168 @@
+{{- $app := .Values.complianceOperator -}}
+{{- if $app.mode.cluster -}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-compliance-operator
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-compliance-operator
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Release.Name }}-compliance-operator
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: {{ .Release.Name }}-compliance-operator
+        {{- include "common.labels" . | nindent 8 }}
+      {{- if or .Values.monitoring.prometheusOperatorAnnotations.enabled (and .Values.databaseConnectionConfiguration.postgres.bankVaultsInjector.enabled (eq $app.driver "db")) $app.annotations }}
+      annotations:
+        {{- if .Values.monitoring.prometheusOperatorAnnotations.enabled }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: metrics
+        {{- end }}
+        {{- if and .Values.databaseConnectionConfiguration.postgres.bankVaultsInjector.enabled (eq $app.driver "db") }}
+        {{- toYaml .Values.databaseConnectionConfiguration.bankVaultsInjectorAnnotations | nindent 8 }}
+        {{- end }}
+        {{- if $app.annotations }}
+        {{- toYaml $app.annotations | nindent 8 }}
+        {{- end }}
+      {{- end }}
+    spec:
+      {{- with $app.nodeSelector}}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if or $app.serviceAccount.create $app.serviceAccount.name }}
+      serviceAccountName: {{ quote (default (printf "%s-%s" .Release.Name "compliance") $app.serviceAccount.name) }}
+      {{- end }}
+      containers:
+        - name: compliance-operator
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ $app.image.name }}:{{ $app.image.tag  | default .Values.allTag }}"
+          imagePullPolicy: {{ $app.image.pullPolicy }}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" $app.securityContext "context" $) | nindent 12 }}
+          {{- if ne $app.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" $app.resourcesPreset) | nindent 12 }}
+          {{- else if ne .Values.globalResourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.globalResourcesPreset) | nindent 12 }}
+          {{- else }}
+          resources:
+            {{- toYaml $app.resources | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: metrics
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              port: metrics
+              path: /ready
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              port: metrics
+              path: /health
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          env:
+            {{- range $app.additionalEnvs }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+            {{- include "logFormat.envs" . | nindent 12 }}
+            - name: HTTP_ADDR
+              value: ":8080"
+            - name: PROM
+              value: {{ (or $app.prometheus.enabled .Values.monitoring.enabled) | quote }}
+            - name: PROF
+              value: {{ $app.profiling.enabled | quote }}
+            - name: WATCHER_ADDR
+              value: {{ include "watcherEndpoint" . | quote }}
+            - name: DRIVER
+              value: {{ $app.driver | quote }}
+            {{- if eq $app.driver "gateway" }}
+            - name: GATEWAY_SERVICE_ADDR
+              value: {{ include "gatewayEndpoint" . | quote }}
+            - name: GATEWAY_SSL_ENABLED
+              value: {{ .Values.gateway.tls.enabled | quote }}
+            - name: GATEWAY_SSL_CA_PATH
+              value: "/usr/share/ca-certificates/gateway-ca.crt"
+            {{- end }}
+            {{- if eq $app.driver "db" }}
+            {{- include "postgres.hostPortDbSsl" . | nindent 12 }}
+            {{- include "postgres.envs" . | nindent 12 }}
+            {{- end }}
+            - name: MAX_REPORTED_RESOURCES
+              value: {{ $app.maxReportedResources | quote }}
+            - name: CRON
+              value: {{ $app.cron | quote }}
+            - name: LOG_LEVEL
+              value: {{ $app.log.logLevel | quote }}
+            - name: BENCHMARK_ROLE
+              value: cluster
+            {{- if .Values.openShift.compatibility.complianceCisBenchmark }}
+            - name: BENCHMARK_NAME
+              value: "cis_openshift"
+            - name: BENCHMARK_VERSION
+              value: "1.0"
+            {{- else }}
+            - name: BENCHMARK_NAME
+              value: {{ $app.benchmark.name | quote }}
+            - name: BENCHMARK_VERSION
+              value: {{ $app.benchmark.version | quote }}
+            {{- end }}
+            - name: CLUSTER_NAME
+              value: {{ .Values.multicluster.clusterName | quote }}
+            - name: CONFIG_DIR
+              value: "/cfg"
+          volumeMounts:
+            {{- include "gateway.tls.volumeMount" . | nindent 12 }}
+            {{- if and .Values.databaseConnectionConfiguration.postgres.tls.enabled (eq $app.driver "db") }}
+            {{- include "pg.tls.volumeMount" . | nindent 12 }}
+            {{- end }}
+      {{- if .Values.dbwait.enabled }}
+      initContainers:
+        - name: db-wait
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ .Values.dbwait.image.name }}:{{ .Values.dbwait.image.tag  | default .Values.allTag }}"
+          imagePullPolicy: {{ .Values.dbwait.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.dbwait.resources | nindent 12 }}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" .Values.dbwait.securityContext "context" $) | nindent 12 }}
+          env:
+            - name: OBSERVATION_STRATEGY
+              value: {{ .Values.develop.dbwait.observationStrategy.watcher.type | quote }}
+            - name: AWAIT_ENDPOINT
+              value: {{ include "watcherAwaitEndpoint" . | quote }}
+            - name: BACKOFF_INTERVAL_SEC
+              value: {{ .Values.develop.dbwait.backoffIntervalSec | quote }}
+            - name: MAX_BACKOFFS
+              value: {{ .Values.develop.dbwait.maxBackoffs | quote }}
+            - name: SSL_ENABLED
+              value: {{ .Values.gateway.tls.enabled | quote }}
+            - name: SSL_CA_PATH
+              value: "/usr/share/ca-certificates/gateway-ca.crt"
+      {{- end }}
+      volumes:
+        {{- if and .Values.gateway.tls.enabled (eq $app.driver "gateway") }}
+        {{- include "gateway.tls.volume" . | nindent 8 }}
+        {{- end }}
+        {{- if and .Values.databaseConnectionConfiguration.postgres.tls.enabled (eq $app.driver "db") }}
+        {{- include "pg.tls.volume" . | nindent 8 }}
+        {{- end }}
+      {{- include "imagePullSecrets" . | nindent 6 }}
+{{- end }}

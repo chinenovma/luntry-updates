@@ -1,0 +1,102 @@
+{{- $app := .Values.monitoring.prometheus }}
+{{- if and .Values.monitoring.enabled $app.enabled -}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-prometheus
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}-prometheus
+    app.kubernetes.io/part-of: luntry
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Release.Name }}-prometheus
+      app.kubernetes.io/part-of: luntry
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Release.Name }}-prometheus
+        app.kubernetes.io/part-of: luntry
+      {{- if $app.annotations }}
+      annotations:
+        {{- toYaml $app.annotations | nindent 8 }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ .Release.Name }}-prometheus
+      {{- with $app.nodeSelector}}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- include "renderSecurityContext" (dict "secContext" $app.podSecurityContext "context" $) | nindent 8 }}
+      containers:
+      - name: prometheus
+        image: "{{ $app.image.registry | default .Values.imageCredentials.registry }}/{{ $app.image.repository }}:{{ $app.image.tag }}"
+        imagePullPolicy: IfNotPresent
+        args:
+          - '--storage.tsdb.retention.time=24h'
+          - '--storage.tsdb.path=/prometheus'
+          - '--config.file=/etc/prometheus/prometheus.yml'
+          - '--storage.tsdb.retention.size=5GB'
+        command:
+          - /bin/prometheus
+        ports:
+          - name: web
+            containerPort: 9090
+        volumeMounts:
+          - name: config-volume
+            mountPath: /etc/prometheus
+          - name: data
+            mountPath: /prometheus
+        securityContext:
+          {{- include "renderSecurityContext" (dict "secContext" $app.securityContext "context" $) | nindent 10 }}
+        {{- if eq $app.resourcesPreset "none" }}
+        resources:
+          {{- toYaml $app.resources | nindent 10 }}
+        {{- else }}
+        resources: {{- include "common.resources.preset" (dict "type" $app.resourcesPreset) | nindent 10 }}
+        {{- end }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ .Release.Name }}-prometheus-config
+        - name: data
+          {{- if eq ($app.pvc.type | lower) "emptydir" }}
+          emptyDir:
+            sizeLimit: {{ $app.pvc.size | quote }}
+          {{- else if eq ($app.pvc.type | lower) "genericephemeralvolume" }}
+          ephemeral:
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - {{ $app.pvc.accessMode }}
+                storageClassName: {{ $app.pvc.storageClass }}
+                resources:
+                  requests:
+                    storage: {{ $app.pvc.size | quote }}
+          {{- else if eq ($app.pvc.type | lower) "pvc" }}
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-prometheus
+          {{- else }}
+          {{- fail "incorrect volume type in monitoring.prometheus.pvc.type" }}
+          {{- end }}
+      {{- include "imagePullSecrets" . | nindent 6 }}
+{{- end -}}

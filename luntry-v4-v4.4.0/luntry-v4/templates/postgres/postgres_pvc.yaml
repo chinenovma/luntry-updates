@@ -1,0 +1,29 @@
+{{- if and (.Values.postgres.enabled) (eq .Values.postgres.pvc.type "pvc") -}}
+{{- if or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main")) -}}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-postgres
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-postgres
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+{{- if or .Values.postgres.pvc.storageClass .Values.postgres.pv.enabled }}
+{{- if .Values.postgres.pvc.storageClass }}
+  storageClassName: {{ .Values.postgres.pvc.storageClass | quote }}
+{{- else if and .Values.postgres.pv.enabled  (not .Values.postgres.pv.storageClass.create) .Values.postgres.pv.storageClass.name }}
+  storageClassName: {{ .Values.postgres.pv.storageClass.name | quote }}
+{{- else if and .Values.postgres.pv.enabled  .Values.postgres.pv.storageClass.create (not .Values.postgres.pv.storageClass.name) }}
+  storageClassName: {{ .Release.Name }}-local-storage
+  volumeName: {{ .Release.Name }}-postgres
+{{- end }}
+{{- end }}
+  accessModes:
+    - {{ .Values.postgres.pvc.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.postgres.pvc.size }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,22 @@
+{{- if .Values.watcher.enabled -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-watcher
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-watcher
+    {{- include "common.labels" . | nindent 4 }}
+  {{- if .Values.watcher.serviceAnnotations }}
+  annotations:
+    {{- toYaml .Values.watcher.serviceAnnotations | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    app.kubernetes.io/component: {{ .Release.Name }}-watcher
+  ports:
+    - name: probe-port
+      protocol: TCP
+      port: 8080
+{{- end }}

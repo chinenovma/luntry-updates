@@ -1,0 +1,134 @@
+{{- $app := .Values.monitoring.grafana }}
+{{- if and .Values.monitoring.enabled $app.enabled -}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}-grafana
+    app.kubernetes.io/part-of: luntry
+  name: {{ .Release.Name }}-grafana
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Release.Name }}-grafana
+      app.kubernetes.io/part-of: luntry
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Release.Name }}-grafana
+        app.kubernetes.io/part-of: luntry
+      {{- if $app.annotations }}
+      annotations:
+        {{- toYaml $app.annotations | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- with $app.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- include "renderSecurityContext" (dict "secContext" $app.podSecurityContext "context" $) | nindent 8 }}
+      containers:
+      - name: grafana
+        image: "{{ $app.image.registry | default .Values.imageCredentials.registry }}/{{ $app.image.repository }}:{{ $app.image.tag }}"
+        imagePullPolicy: IfNotPresent
+        args:
+          - '--config=/etc/grafana/grafana.ini'
+        ports:
+          - containerPort: 3000
+            name: http-grafana
+            protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /robots.txt
+            port: 3000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 2
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 300
+          periodSeconds: 10
+          successThreshold: 1
+          tcpSocket:
+            port: 3000
+          timeoutSeconds: 1
+        securityContext:
+          {{- include "renderSecurityContext" (dict "secContext" $app.securityContext "context" $) | nindent 12 }}
+        {{- if eq $app.resourcesPreset "none" }}
+        resources:
+          {{- toYaml $app.resources | nindent 10 }}
+        {{- else }}
+        resources: {{- include "common.resources.preset" (dict "type" $app.resourcesPreset) | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+          - name: grafana-config-pv
+            mountPath: /var/lib/grafana
+          - name: grafana-config-ini
+            mountPath: /etc/grafana/grafana.ini
+            subPath: grafana.ini
+          - name: grafana-config-datasource
+            mountPath: /etc/grafana/provisioning/datasources/prometheus.yaml
+            subPath: prometheus.yaml
+          - name: grafana-config-dashboard
+            mountPath: /etc/grafana/provisioning/dashboards/dashboard.yaml
+            subPath: dashboard.yaml
+          - name: grafana-dashboard
+            mountPath: /etc/grafana/dashboards
+      volumes:
+        - name: grafana-config-pv
+          {{- if eq ($app.pvc.type | lower) "emptydir" }}
+          emptyDir:
+            sizeLimit: {{ $app.pvc.size | quote }}
+          {{- else if eq ($app.pvc.type | lower) "genericephemeralvolume" }}
+          ephemeral:
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - {{ $app.pvc.accessMode }}
+                storageClassName: {{ $app.pvc.storageClass }}
+                resources:
+                  requests:
+                    storage: {{ $app.pvc.size | quote }}
+          {{- else if eq ($app.pvc.type | lower) "pvc" }}
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-grafana
+          {{- else }}
+          {{- fail "incorrect volume type in monitoring.grafana.pvc.type" }}
+          {{- end }}
+        - name: grafana-config-datasource
+          configMap:
+            name: {{ .Release.Name }}-grafana-config
+            items:
+            - key: prometheus.yaml
+              path: prometheus.yaml
+        - name: grafana-config-ini
+          configMap:
+            name: {{ .Release.Name }}-grafana-config
+            items:
+            - key: grafana.ini
+              path: grafana.ini
+        - name: grafana-config-dashboard
+          configMap:
+            name: {{ .Release.Name }}-grafana-config
+            items:
+            - key: dashboard.yaml
+              path: dashboard.yaml
+        - name: grafana-dashboard
+          configMap:
+            name: {{ .Release.Name }}-grafana-dashboard
+      {{- include "imagePullSecrets" . | nindent 6 }}
+{{- end }}

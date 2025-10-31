@@ -1,0 +1,90 @@
+{{- if and .Values.collector.hpa.enabled -}}
+{{- if .Capabilities.APIVersions.Has "autoscaling/v2" -}}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Release.Name }}-collector
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-collector
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Release.Name }}-collector
+  minReplicas: {{ .Values.collector.hpa.minReplicas }}
+  maxReplicas: {{ .Values.collector.hpa.maxReplicas }}
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: {{ .Values.collector.hpa.cpu.avgUsage }}
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: {{ .Values.collector.hpa.memory.avgUsage }}
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: {{ .Values.collector.hpa.stabilizationWindow }}
+{{- else if and (.Capabilities.APIVersions.Has "autoscaling/v2beta2") (le (.Capabilities.KubeVersion.Minor | int) 18) }}
+---
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Release.Name }}-collector
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-collector
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Release.Name }}-collector
+  minReplicas: {{ .Values.collector.hpa.minReplicas }}
+  maxReplicas: {{ .Values.collector.hpa.maxReplicas }}
+  targetCPUUtilizationPercentage: {{ .Values.collector.hpa.cpu.avgUsage }}
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: {{ .Values.collector.hpa.stabilizationWindow }}
+{{- else if and (.Capabilities.APIVersions.Has "autoscaling/v2beta2") (ge (.Capabilities.KubeVersion.Minor | int) 19) -}}
+---
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Release.Name }}-collector
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-collector
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Release.Name }}-collector
+  minReplicas: {{ .Values.collector.hpa.minReplicas }}
+  maxReplicas: {{ .Values.collector.hpa.maxReplicas }}
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: {{ .Values.collector.hpa.cpu.avgUsage }}
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: {{ .Values.collector.hpa.memory.avgUsage }}
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: {{ .Values.collector.hpa.stabilizationWindow }}
+{{- end }}
+{{- end }}

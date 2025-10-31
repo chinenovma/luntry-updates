@@ -1,0 +1,149 @@
+{{- $app := .Values.supervisor -}}
+{{- if $app.enabled -}}
+{{- if or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main")) -}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-supervisor
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-supervisor
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Release.Name }}-supervisor
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: {{ .Release.Name }}-supervisor
+        {{- include "common.labels" . | nindent 8 }}
+      {{- if or .Values.databaseConnectionConfiguration.postgres.bankVaultsInjector.enabled .Values.databaseConnectionConfiguration.kafka.bankVaultsInjector.enabled .Values.databaseConnectionConfiguration.redis.bankVaultsInjector.enabled $app.annotations }}
+      annotations:
+        {{- if or .Values.databaseConnectionConfiguration.postgres.bankVaultsInjector.enabled .Values.databaseConnectionConfiguration.kafka.bankVaultsInjector.enabled .Values.databaseConnectionConfiguration.redis.bankVaultsInjector.enabled }}
+        {{- toYaml .Values.databaseConnectionConfiguration.bankVaultsInjectorAnnotations | nindent 8 }}
+        {{- end }}
+        {{- if $app.annotations }}
+        {{- toYaml $app.annotations | nindent 8 }}
+        {{- end }}
+      {{- end }}
+    spec:
+      {{- with $app.nodeSelector}}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if or $app.serviceAccount.create $app.serviceAccount.name }}
+      serviceAccountName: {{ quote (default (printf "%s-%s" .Release.Name "supervisor") $app.serviceAccount.name) }}
+      {{- end }}
+      containers:
+        - name: supervisor
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ $app.image.name }}:{{ $app.image.tag | default .Values.allTag }}"
+          imagePullPolicy: {{ $app.image.pullPolicy }}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" $app.securityContext "context" $) | nindent 12 }}
+          ports:
+            - name: probe-port
+              containerPort: 8080
+            - name: server-api
+              containerPort: 31337
+            - name: server-grpc
+              containerPort: 43123
+          readinessProbe:
+            httpGet:
+              port: probe-port
+              path: /ready
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          {{- if ne $app.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" $app.resourcesPreset) | nindent 12 }}
+          {{- else if ne .Values.globalResourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.globalResourcesPreset) | nindent 12 }}
+          {{- else }}
+          resources:
+            {{- toYaml $app.resources | nindent 12 }}
+          {{- end }}
+          env:
+            {{- include "postgres.hostPortDbSsl" . | nindent 12 }}
+            {{- include "postgres.envs" . | nindent 12 }}
+            {{- include "kafka.envs" . | nindent 12 }}
+            {{- include "redis.pass" . | nindent 12 }}
+            - name: REDIS_ADDR
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-luntry-config
+                  key: REDIS_HOST
+            - name: SUPERVISOR_DEBUG_MODE
+              value: {{ $app.debug | quote }}
+            - name: DEFAULT_BRANCH_NAME
+              value: {{ $app.defaultBranch | quote }}
+            - name: TRAINING_NETWORKS_LIMIT
+              value: "20000"
+            - name: TRAINING_FILES_LIMIT
+              value: "20000"
+          {{- if or .Values.databaseConnectionConfiguration.postgres.tls.enabled .Values.databaseConnectionConfiguration.kafka.ssl.enabled }}
+          volumeMounts:
+            {{- include "kafka.ssl.volumeMount" . | nindent 12 }}
+            {{- include "pg.tls.volumeMount" . | nindent 12 }}
+          {{- end }}
+      {{- if .Values.dbwait.enabled }}
+      initContainers:
+        - name: db-wait
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ .Values.dbwait.image.name }}:{{ .Values.dbwait.image.tag  | default .Values.allTag }}"
+          imagePullPolicy: {{ .Values.dbwait.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.dbwait.resources | nindent 12 }}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" .Values.dbwait.securityContext "context" $) | nindent 12 }}
+          env:
+            {{- include "postgres.hostPortDbSsl" . | nindent 12 }}
+            {{- include "postgres.envs" . | nindent 12 }}
+            - name: OBSERVATION_STRATEGY
+              value: {{ .Values.develop.dbwait.observationStrategy.db.type | quote }}
+            - name: TABLES_RECV_METHOD
+              value: {{ .Values.develop.dbwait.observationStrategy.db.tablesRecvMethod | quote }}
+            - name: BACKOFF_INTERVAL_SEC
+              value: {{ .Values.develop.dbwait.backoffIntervalSec | quote }}
+            - name: MAX_BACKOFFS
+              value: {{ .Values.develop.dbwait.maxBackoffs | quote }}
+            - name: TABLES_LIST
+              value: {{ .Values.develop.dbwait.observationStrategy.db.tableList | quote }}
+          {{- if .Values.databaseConnectionConfiguration.postgres.tls.enabled }}
+          volumeMounts:
+            {{- include "pg.tls.volumeMount" . | nindent 12 }}
+          {{- end }}
+      {{- end }}
+      {{- if or .Values.databaseConnectionConfiguration.postgres.tls.enabled .Values.databaseConnectionConfiguration.kafka.ssl.enabled }}
+      volumes:
+        {{- include "pg.tls.volume" . | nindent 8 }}
+        {{- include "kafka.ssl.volume" . | nindent 8 }}
+      {{- end }}
+      {{- include "imagePullSecrets" . | nindent 6 }}
+
+{{- if and $app.pdb.enabled (.Capabilities.APIVersions.Has "policy/v1") }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}-supervisor
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-supervisor
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ $app.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Release.Name }}-supervisor
+{{- end }}
+{{- end }}
+{{- end }}

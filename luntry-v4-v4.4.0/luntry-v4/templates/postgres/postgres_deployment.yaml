@@ -1,0 +1,197 @@
+{{- $app := .Values.postgres -}}
+{{- if $app.enabled -}}
+{{- if or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main")) -}}
+---
+apiVersion: apps/v1
+{{- if eq $app.mode "deployment" }}
+kind: Deployment
+{{- else }}
+kind: StatefulSet
+{{- end }}
+metadata:
+  name: {{ .Release.Name }}-postgres
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-postgres
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  {{- if (eq $app.mode "statefulset") }}
+  serviceName: {{ .Release.Name }}-postgres
+  {{- end }}
+  selector:
+    matchLabels:
+        app.kubernetes.io/component: {{ .Release.Name }}-postgres
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: {{ .Release.Name }}-postgres
+        {{- include "common.labels" . | nindent 8 }}
+    spec:
+      {{- with $app.nodeSelector}}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if or $app.serviceAccount.create $app.serviceAccount.name }}
+      serviceAccountName: {{ quote (default (printf "%s-%s" .Release.Name "postgres") $app.serviceAccount.name) }}
+      {{- end }}
+      securityContext:
+        {{- include "renderSecurityContext" (dict "secContext" $app.podSecurityContext "context" $) | nindent 8 }}
+      {{- if $app.pv.enabled }}
+      initContainers:
+        - name: postgres-set-uid
+          image: "{{ $app.image.registry }}/{{ $app.image.name }}:{{ $app.image.tag }}"
+          command:
+            - sh
+            - -c
+            - (chown -R {{ $app.securityContext.runAsUser }}:{{ $app.securityContext.runAsUser }} /var/lib/postgresql/data)
+          volumeMounts:
+            - name: postgres-volume
+              mountPath: /var/lib/postgresql/data
+      {{- end }}
+      containers:
+        - name: postgres
+          image: "{{ $app.image.registry | default .Values.imageCredentials.registry }}/{{ $app.image.name }}:{{ $app.image.tag }}"
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" $app.securityContext "context" $) | nindent 12 }}
+          {{- if eq $app.resourcesPreset "none" }}
+          resources:
+            {{- toYaml $app.resources | nindent 12 }}
+          {{- else }}
+          resources: {{- include "common.resources.preset" (dict "type" $app.resourcesPreset) | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: 5432
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres"]
+            failureThreshold: 24
+            periodSeconds: 5
+            initialDelaySeconds: 30
+          env:
+            {{- range $app.additionalEnvs }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+            - name: COLLECTOR_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-luntry-config
+                  key: POSTGRES_DB
+            - name: MIGRATOR_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-postgres-auth
+                  key: POSTGRES_USER
+            - name: MIGRATOR_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-postgres-auth
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-postgres-auth
+                  key: POSTGRES_PASSWORD
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          args:
+            - "-c"
+            - "log_min_duration_statement=100"
+            - "-c"
+            - "shared_preload_libraries=pg_stat_statements"
+            - "-c"
+            - "pg_stat_statements.max=10000"
+            - "-c"
+            - "pg_stat_statements.track=all"
+            {{- if and .Values.databaseConnectionConfiguration.postgres.tls.enabled .Values.develop.postgres.tls.secretName }}
+            - "-c"
+            - "ssl=on"
+            - "-c"
+            - "ssl_min_protocol_version=TLSv1.3"
+            - "-c"
+            - "ssl_cert_file=/var/lib/postgresql/tls.crt"
+            - "-c"
+            - "ssl_key_file=/var/lib/postgresql/tls.key"
+            - "-c"
+            - "ssl_ca_file=/var/lib/postgresql/ca.crt"
+            - "-c"
+            - "hba_file=/var/lib/postgresql/pg_hba.conf"
+            {{- end }}
+          volumeMounts:
+            - name: postgres-volume
+              mountPath: /var/lib/postgresql/data
+            - name: db-provision
+              mountPath: /docker-entrypoint-initdb.d/0provision.sh
+              subPath: 0provision.sh
+            {{- if and .Values.databaseConnectionConfiguration.postgres.tls.enabled .Values.develop.postgres.tls.secretName }}
+            - name: pghba
+              mountPath: /var/lib/postgresql/pg_hba.conf
+              subPath: pghba
+            - name: postgres-crt
+              mountPath: /var/lib/postgresql/ca.crt
+              subPath: ca.crt
+            - name: postgres-crt
+              mountPath: /var/lib/postgresql/tls.crt
+              subPath: tls.crt
+            - name: postgres-crt
+              mountPath: /var/lib/postgresql/tls.key
+              subPath: tls.key
+            {{- end }}
+      volumes:
+        - name: postgres-volume
+          {{- if eq ($app.pvc.type | lower) "emptydir" }}
+          emptyDir:
+            sizeLimit: {{ $app.pvc.size | quote }}
+          {{- else if eq ($app.pvc.type | lower) "genericephemeralvolume" }}
+          ephemeral:
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - {{ $app.pvc.accessMode }}
+                storageClassName: {{ $app.pvc.storageClass }}
+                resources:
+                  requests:
+                    storage: {{ $app.pvc.size | quote }}
+          {{- else if eq ($app.pvc.type | lower) "pvc" }}
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-postgres
+          {{- else }}
+          {{- fail "incorrect volume type in postgres.pvc.type" }}
+          {{- end }}
+        - name: db-provision
+          configMap:
+            name: {{ .Release.Name }}-db-provision
+            items:
+              - key: 0provision.sh
+                path: 0provision.sh
+        {{- if and .Values.databaseConnectionConfiguration.postgres.tls.enabled .Values.develop.postgres.tls.secretName }}
+        - name: pghba
+          configMap:
+            name: {{ .Release.Name }}-db-provision
+            items:
+              - key: pghba
+                path: pghba
+        - name: postgres-crt
+          secret:
+            secretName: {{ .Values.develop.postgres.tls.secretName }}
+            defaultMode: 256 # 0400 unix
+            items:
+              - key: ca.crt
+                path: ca.crt
+              - key: tls.crt
+                path: tls.crt
+              - key: tls.key
+                path: tls.key
+        {{- end }}
+      {{- include "imagePullSecrets" . | nindent 6 }}
+{{- end }}
+{{- end }}

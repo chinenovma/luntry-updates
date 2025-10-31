@@ -1,0 +1,43 @@
+{{- if .Values.complianceOperator.serviceAccount.create -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ quote (default (printf "%s-%s" .Release.Name "compliance") .Values.complianceOperator.serviceAccount.name) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-compliance
+    {{- include "common.labels" . | nindent 4 }}
+
+{{- if .Values.openShift.compatibility.compliancePrivilegedScc }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ .Release.Name }}-compliance
+  namespace: {{ .Release.Namespace }}
+rules:
+- apiGroups:
+  - security.openshift.io
+  resourceNames:
+  - privileged
+  resources:
+  - securitycontextconstraints
+  verbs:
+  - use
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ .Release.Name }}-compliance
+  namespace: {{ .Release.Namespace }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ quote (default (printf "%s-%s" .Release.Name "compliance") .Values.complianceOperator.serviceAccount.name) }}
+roleRef:
+  kind: Role
+  name: {{ .Release.Name }}-compliance
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}
+{{- end }}

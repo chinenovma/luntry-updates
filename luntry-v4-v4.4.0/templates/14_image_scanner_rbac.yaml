@@ -1,0 +1,58 @@
+{{- if .Values.imageScanner.mode.cluster -}}
+{{- $saname := default (printf "%s-%s" .Release.Name "cluster-scanner") .Values.imageScanner.serviceAccount.cluster.name -}}
+{{- if .Values.imageScanner.serviceAccount.cluster.create -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ quote $saname }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-cluster-scanner
+    {{- include "common.labels" . | nindent 4 }}
+{{- end }}
+{{- if .Values.imageScanner.rbac.cluster.create }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Release.Name }}-cluster-scanner
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-cluster-scanner
+    {{- include "common.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+      - namespaces
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Release.Name }}-cluster-scanner
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-cluster-scanner
+    {{- include "common.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ .Release.Name }}-cluster-scanner
+subjects:
+  - kind: ServiceAccount
+    name: {{ quote $saname }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}
+{{- end }}

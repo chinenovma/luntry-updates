@@ -1,0 +1,27 @@
+{{- if .Values.postgres.enabled -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-postgres
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-postgres
+    {{- include "common.labels" . | nindent 4 }}
+  {{- if .Values.postgres.serviceAnnotations }}
+  annotations:
+    {{- toYaml .Values.postgres.serviceAnnotations | nindent 4 }}
+  {{- end }}
+spec:
+{{- if (eq .Values.postgres.mode "statefulset") }}
+  clusterIP: None
+  type: ClusterIP
+{{- else }}
+  type: {{ .Values.postgres.service.type }}
+{{- end }}
+  selector:
+    app.kubernetes.io/component: {{ .Release.Name }}-postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+{{- end }}

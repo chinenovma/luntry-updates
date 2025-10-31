@@ -1,0 +1,13 @@
+{{- if and (.Values.checker.enabled) (.Values.checker.serviceAccount.create) -}}
+{{- if or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main")) -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ quote (default (printf "%s-%s" .Release.Name "checker") .Values.checker.serviceAccount.name) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-checker
+    {{- include "common.labels" . | nindent 4 }}
+{{- end }}
+{{- end }}

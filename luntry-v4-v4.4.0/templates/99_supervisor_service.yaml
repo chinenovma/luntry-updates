@@ -1,0 +1,28 @@
+{{- if .Values.supervisor.enabled -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-supervisor
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-supervisor
+    {{- include "common.labels" . | nindent 4 }}
+  {{- if .Values.supervisor.serviceAnnotations }}
+  annotations:
+    {{- toYaml .Values.supervisor.serviceAnnotations | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    app.kubernetes.io/component: {{ .Release.Name }}-supervisor
+  ports:
+    - name: server-api
+      protocol: TCP
+      port: 31337
+    - name: probe-port
+      protocol: TCP
+      port: 8080
+    - name: server-grpc
+      protocol: TCP
+      port: 43123
+{{- end }}

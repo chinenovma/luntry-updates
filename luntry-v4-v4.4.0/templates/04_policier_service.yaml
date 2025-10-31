@@ -1,0 +1,22 @@
+{{- if .Values.policier.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-policier
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-policier
+    {{- include "common.labels" . | nindent 4 }}
+  {{- if .Values.policier.serviceAnnotations }}
+  annotations:
+    {{- toYaml .Values.policier.serviceAnnotations | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    app.kubernetes.io/component: {{ .Release.Name }}-policier
+  ports:
+    - name: probe-port
+      protocol: TCP
+      port: 8080
+{{- end }}

@@ -1,0 +1,62 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.grafana.enabled .Values.monitoring.grafana.ingress.enabled -}}
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" -}}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-grafana-ingress
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-grafana-ingress
+    {{- include "common.labels" . | nindent 4 }}
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+spec:
+  {{- if .Values.monitoring.grafana.ingress.tls.enabled }}
+  tls:
+  - hosts:
+    - {{ .Values.monitoring.grafana.ingress.domainName }}
+      secretName: {{ .Values.monitoring.grafana.ingress.tls.secretName }}
+  {{- end }}
+  ingressClassName: {{ .Values.monitoring.grafana.ingress.ingressClassName }}
+  rules:
+  - host: {{ (.Values.monitoring.grafana.ingress.domainName | default "grafana.luntry") | quote }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}-grafana
+            port:
+              number: 3000
+{{- else if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1/Ingress" -}}
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-grafana-ingress
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-grafana-ingress
+    {{- include "common.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.monitoring.grafana.ingress.ingressClassName }}
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+spec:
+  {{- if .Values.monitoring.grafana.ingress.tls.enabled }}
+  tls:
+  - hosts:
+    - {{ .Values.monitoring.grafana.ingress.domainName }}
+      secretName: {{ .Values.monitoring.grafana.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+  - host: {{ (.Values.monitoring.grafana.ingress.domainName | default "grafana.luntry") | quote }}
+    http:
+      paths:
+      - backend:
+            serviceName: {{ .Release.Name }}-grafana
+            servicePort: 3000
+{{- end }}
+{{- end }}

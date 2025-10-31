@@ -1,0 +1,220 @@
+{{- $app := .Values.imageScanner -}}
+{{- $db := .Values.databaseConnectionConfiguration }}
+{{- if $app.mode.cluster -}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-cluster-scanner
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-cluster-scanner
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  {{- if not $app.singleton }}
+  replicas: {{ $app.replicas.cluster }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Release.Name }}-cluster-scanner
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: {{ .Release.Name }}-cluster-scanner
+      {{- if or .Values.monitoring.prometheusOperatorAnnotations.enabled $app.annotations $db.postgres.bankVaultsInjector.enabled $db.kafka.bankVaultsInjector.enabled $db.redis.bankVaultsInjector.enabled }}
+      annotations:
+        {{- if .Values.monitoring.prometheusOperatorAnnotations.enabled }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: metrics
+        {{- end }}
+        {{- if or $db.postgres.bankVaultsInjector.enabled $db.kafka.bankVaultsInjector.enabled $db.redis.bankVaultsInjector.enabled }}
+        {{- toYaml $db.bankVaultsInjectorAnnotations | nindent 8 }}
+        {{- end }}
+        {{- if $app.annotations }}
+        {{- toYaml $app.annotations | nindent 8 }}
+        {{- end }}
+      {{- end }}
+    spec:
+      {{- with $app.nodeSelector}}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- include "renderSecurityContext" (dict "secContext" $app.podSecurityContext "context" $) | nindent 8 }}
+      {{- if or $app.serviceAccount.cluster.create $app.serviceAccount.cluster.name }}
+      serviceAccountName: {{ quote (default (printf "%s-%s" .Release.Name "cluster-scanner") $app.serviceAccount.cluster.name) }}
+      {{- else }}
+      {{ fail "\nYou need to create a service account or specify an existing one!" }}
+      {{- end }}
+      containers:
+        - name: cluster-scanner-cluster
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ $app.image.name }}:{{ $app.image.tag  | default .Values.allTag }}"
+          imagePullPolicy: {{ $app.image.pullPolicy }}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" $app.securityContext "context" $) | nindent 12 }}
+          {{- if ne $app.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" $app.resourcesPreset) | nindent 12 }}
+          {{- else if ne .Values.globalResourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.globalResourcesPreset) | nindent 12 }}
+          {{- else }}
+          resources:
+            {{- toYaml $app.resources | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          {{- if $app.probes.liveness.enabled }}
+          livenessProbe:
+            httpGet:
+              path: "/health"
+              port: 8080
+            initialDelaySeconds: 180
+            periodSeconds: 60
+          {{- end }}
+          {{- if $app.probes.readiness.enabled }}
+          readinessProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            httpGet:
+              path: "/ready"
+              port: 8080
+          {{- end }}
+          env:
+            {{- range $app.additionalEnvs }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+            {{- include "kafka.envs" . | nindent 12 }}
+            {{- include "proxy.envs" . | indent 12 }}
+            {{- include "logFormat.envs" . | nindent 12 }}
+            - name: ROLE
+              value: "cluster"
+            - name: SINGLETON
+              value: {{ $app.singleton | quote }}
+            - name: ENCRYPTION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-encryption-secret
+                  key: ENCRYPTION_STRING
+            - name: SCOPE
+              value: {{ $app.scope | quote }}
+            - name: SERVICE_NAMESPACE
+              value: {{ $app.fallbackSecretNamespace | default .Release.Namespace | quote }}
+            - name: VULN_DB_LISTING
+              value: {{ ( or .Values.vulndb.enabled ( ne .Values.vulndb.address "" ) ) | ternary (print (include "vulndbAddress" .) "/v6/latest.json") ($app.dbListing) | quote }}
+            - name: VULN_DATA_URL
+              value: {{ ( or .Values.vulndb.enabled ( ne .Values.vulndb.address "" ) ) | ternary (print (include "vulndbAddress" .) "/e/e.tar.gz" ) ($app.dbExploits) | quote }}
+            - name: PROM
+              value: {{ (or $app.prometheus.enabled .Values.monitoring.enabled) | quote }}
+            - name: PROF
+              value: {{ $app.profiling.enabled | quote }}
+            - name: LOG_LEVEL
+              value: {{ $app.log.logLevel | quote }}
+            - name: HTTP_ADDR
+              value: ":8080"
+            - name: USE_YARA_SCANNER_BINARY
+              value: {{ $app.yara.useBinary | quote }}
+            - name: YARA_SCANNER_BINARY_PATH
+              value: {{ $app.yara.binaryPath | quote }}
+            - name: WATCHER_ADDR
+              value: {{ include "watcherEndpoint" . | quote }}
+            - name: DRIVER
+              value: {{ $app.driver | quote }}
+            {{- if eq $app.driver "gateway" }}
+            - name: GATEWAY_SERVICE_ADDR
+              value: {{ include "gatewayEndpoint" . | quote }}
+            - name: GATEWAY_SSL_ENABLED
+              value: {{ .Values.gateway.tls.enabled | quote }}
+            - name: GATEWAY_SSL_CA_PATH
+              value: "/usr/share/ca-certificates/gateway-ca.crt"
+            {{- else if eq $app.driver "db" }}
+              {{- include "postgres.hostPortDbSsl" . | nindent 12 }}
+              {{- include "postgres.envs" . | nindent 12 }}
+            {{- end }}
+            {{- if or .Values.caBundle.crtBase64 .Values.caBundle.secretName }}
+            - name: SSL_CERT_DIR
+              value: /usr/share/ca-certificates
+            {{- end }}
+            {{- if not $app.singleton }}
+            {{- include "redis.pass" . | nindent 12 }}
+            - name: REDIS_ADDR
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-luntry-config
+                  key: REDIS_HOST
+            {{- end }}
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+            {{- include "caBundle.volumeMount" . | nindent 12 }}
+            {{- include "kafka.ssl.volumeMount" . | nindent 12 }}
+            {{- include "gateway.tls.volumeMount" . | nindent 12 }}
+            {{- if and (eq $app.driver "db") $db.postgres.tls.enabled }}
+              {{- include "pg.tls.volumeMount" . | nindent 12 }}
+            {{- end }}
+      {{- if .Values.dbwait.enabled }}
+      initContainers:
+        - name: db-wait
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ .Values.dbwait.image.name }}:{{ .Values.dbwait.image.tag  | default .Values.allTag }}"
+          imagePullPolicy: {{ .Values.dbwait.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.dbwait.resources | nindent 12 }}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" .Values.dbwait.securityContext "context" $) | nindent 12 }}
+          env:
+            - name: OBSERVATION_STRATEGY
+              value: {{ .Values.develop.dbwait.observationStrategy.gateway.type | quote }}
+            - name: TABLES_RECV_METHOD
+              value: {{ .Values.develop.dbwait.observationStrategy.db.tablesRecvMethod | quote }}
+            - name: TABLES_LIST
+              value: {{ .Values.develop.dbwait.observationStrategy.db.tableList | quote }}
+            - name: AWAIT_ENDPOINT
+              value: {{ include "watcherAwaitEndpoint" . | quote }}
+            - name: BACKOFF_INTERVAL_SEC
+              value: {{ .Values.develop.dbwait.backoffIntervalSec | quote }}
+            - name: MAX_BACKOFFS
+              value: {{ .Values.develop.dbwait.maxBackoffs | quote }}
+            - name: SSL_ENABLED
+              value: {{ .Values.gateway.tls.enabled | quote }}
+            - name: SSL_CA_PATH
+              value: "/usr/share/ca-certificates/gateway-ca.crt"
+          {{- if .Values.gateway.tls.enabled }}
+          volumeMounts:
+            {{- include "gateway.tls.volumeMount" . | nindent 12 }}
+          {{- end }}
+      {{- end }}
+      volumes:
+        - name: tmp
+          {{- if eq ($app.pvc.type | lower) "emptydir"}}
+          emptyDir:
+            sizeLimit: {{ $app.pvc.size }}
+          {{- else if eq ($app.pvc.type | lower) "genericephemeralvolume" }}
+          ephemeral:
+            volumeClaimTemplate:
+              spec:
+                accessModes: ["ReadWriteOnce"]
+                storageClassName: {{ $app.pvc.storageClass }}
+                resources:
+                  requests:
+                    storage: {{ $app.pvc.size | quote }}
+          {{- else }}
+          {{- fail "incorrect volume type in imageScanner.tmp.type" }}
+          {{- end }}
+        {{- include "kafka.ssl.volume" . | nindent 8 }}
+        {{- include "gateway.tls.volume" . | nindent 8 }}
+        {{- include "caBundle.volume" . | nindent 8 }}
+        {{- if and (eq $app.driver "db") $db.postgres.tls.enabled }}
+          {{- include "pg.tls.volume" . | nindent 8 }}
+        {{- end }}
+      {{- include "imagePullSecrets" . | nindent 6 }}
+{{- end }}

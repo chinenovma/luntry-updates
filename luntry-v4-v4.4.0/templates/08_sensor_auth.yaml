@@ -1,0 +1,28 @@
+{{- if and .Values.sensor.enabled .Values.sensor.reactions.enabled -}}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-sensor-auth
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-sensor-auth
+    {{- include "common.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  {{- if and .Values.sensor.reactions.enabled .Values.sensor.reactions.remote.ftp.host }}
+  REMOTE_FTP_USERNAME: {{ .Values.sensor.reactions.remote.ftp.username | default "" }}
+  REMOTE_FTP_PASSWORD: {{ .Values.sensor.reactions.remote.ftp.password | default "" }}
+  REMOTE_FTP_IPADDR_PORT: {{ .Values.sensor.reactions.remote.ftp.host }}
+  {{- end }}
+  {{- if and .Values.sensor.reactions.enabled .Values.sensor.reactions.remote.smb.host }}
+  REMOTE_SMB_USERNAME: {{ .Values.sensor.reactions.remote.smb.username | default "" }}
+  REMOTE_SMB_PASSWORD: {{ .Values.sensor.reactions.remote.smb.password | default "" }}
+  REMOTE_SMB_IPADDR_PORT: {{ .Values.sensor.reactions.remote.smb.host | default "" }}
+  {{- end }}
+  {{- if and .Values.sensor.reactions.enabled .Values.sensor.reactions.remote.s3.host }}
+  REMOTE_S3_USERNAME: {{ .Values.sensor.reactions.remote.s3.username | default "" }}
+  REMOTE_S3_PASSWORD: {{ .Values.sensor.reactions.remote.s3.password | default "" }}
+  REMOTE_S3_IPADDR_PORT: {{ .Values.sensor.reactions.remote.s3.host | default "" }}
+{{- end }}
+{{- end }}

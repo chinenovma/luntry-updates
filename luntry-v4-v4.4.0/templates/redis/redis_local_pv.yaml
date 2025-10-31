@@ -1,0 +1,30 @@
+{{- if and (.Values.redis.pv.enabled) (.Values.redis.enabled) (not .Values.redis.pvc.emptyDir) -}}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-redis
+  namespace: {{ .Release.Namespace }}
+  labels:
+    type: local
+  annotations:
+    pv.beta.kubernetes.io/gid: {{ .Values.redis.podSecurityContext.fsGroup | quote }}
+spec:
+  {{- if or .Values.redis.pv.storageClass.create .Values.redis.pv.storageClass.name }}
+  storageClassName: {{ .Values.redis.pv.storageClass.name | default (printf "%s-local-storage" .Release.Name) }}
+  {{- end }}
+  persistentVolumeReclaimPolicy: {{ .Values.redis.pv.reclaimPolicy | default "Recycle" }}
+  capacity:
+    storage: {{ .Values.redis.pvc.size }}
+  volumeMode: Filesystem
+  accessModes:
+    - {{ .Values.redis.pvc.accessMode }}
+  local:
+    path: {{ .Values.redis.pv.localPath }}
+{{- with .Values.redis.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms }}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- end }}
