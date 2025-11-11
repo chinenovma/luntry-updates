@@ -1,0 +1,23 @@
+FROM docker.io/library/alt:p11 as builder
+RUN apt-get update -y
+RUN apt-get install openscap-scanner openscap-utils -y
+
+# RUN oscap oval eval --results results.xml --report report.html redos.xml
+RUN oscap -h
+RUN ldd /usr/bin/oscap | awk '/=>/ {print $3}' | sort -u >> libs.txt
+RUN ldd /usr/bin/oscap | awk '/=>/ {print $3}' | while read lib; do ldd $lib; done | awk '/=>/ {print $3}' | sort -u >> libs.txt
+RUN ldd /usr/bin/oscap | awk '/=>/ {print $1}' | while read lib; do find / -name $lib 2> /dev/null; done | sort -u >> libs.txt
+RUN cat libs.txt | sort -u > deps.txt
+RUN cat deps.txt | while read file; do realpath $file; done > deps_files.txt
+RUN cat deps.txt >> deps_files.txt
+RUN cat deps_files.txt | sort -u > deps_files_all.txt
+RUN which oscap >> deps_files_all.txt
+# RUN ls -d -1 /usr/share/openscap/schemas/* >> deps_files_all.txt
+RUN ls -d -1 /usr/share/openscap/* >> deps_files_all.txt
+RUN tar -cvPf alt-p11-libs.tar -T deps_files_all.txt
+
+
+FROM docker.io/library/alt:p11
+COPY --from=builder /alt-p11-libs.tar /alt-p11-libs.tar
+RUN tar -xvPf alt-p11-libs.tar
+RUN oscap -h

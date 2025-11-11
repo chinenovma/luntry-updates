@@ -1,0 +1,25 @@
+FROM registry.red-soft.ru/ubi7/ubi as builder
+RUN dnf update -y
+RUN dnf install openscap-scanner openscap-utils -y
+RUN dnf install wget -y
+RUN wget https://redos.red-soft.ru/support/secure/redos.xml
+RUN oscap oval eval --results results.xml --report report.html redos.xml
+RUN ldd /usr/bin/oscap | awk '/=>/ {print $3}' | sort -u >> libs.txt
+RUN ldd /usr/bin/oscap | awk '/=>/ {print $3}' | while read lib; do ldd $lib; done | awk '/=>/ {print $3}' | sort -u >> libs.txt
+RUN ldd /usr/bin/oscap | awk '/=>/ {print $1}' | while read lib; do find / -name $lib 2> /dev/null; done | sort -u >> libs.txt
+RUN cat libs.txt | sort -u > deps.txt
+RUN cat deps.txt | while read file; do realpath $file; done > deps_files.txt
+RUN cat deps.txt >> deps_files.txt
+RUN cat deps_files.txt | sort -u > deps_files_all.txt
+RUN which oscap >> deps_files_all.txt
+RUN ls -d -1 /usr/share/openscap/* >> deps_files_all.txt
+#RUN ls -d -1 /usr/share/openscap/schemas/* >> deps_files_all.txt
+#RUN ls -1 /usr/share/openscap/* >> deps_files_all.txt
+RUN tar -cvPf redos7-libs.tar -T deps_files_all.txt
+
+
+FROM registry.red-soft.ru/ubi7/ubi
+COPY --from=builder /redos7-libs.tar /redos7-libs.tar
+RUN tar -xvPf redos7-libs.tar
+COPY --from=builder /redos.xml /redos.xml
+RUN oscap oval eval --results results.xml --report report.html redos.xml
