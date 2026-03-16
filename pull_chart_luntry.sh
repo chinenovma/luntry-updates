@@ -1,6 +1,6 @@
 CHART_URL="https://registry.luntry.com/chartrepo/luntry/"
 IMAGE_URL="registry.luntry.com"
-VERSION="4.4.0"
+VERSION="4.5.0"
 
 helm repo update
 helm repo add luntry --username ${CHART_USERNAME} --password ${CHART_PASSWORD} ${CHART_URL}
