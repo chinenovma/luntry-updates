@@ -1,0 +1,353 @@
+apiVersion: rbac.authorization.k8s.io/v1
+
+kind: RoleBinding
+
+metadata:
+
+name: devops-admin
+
+namespace: aml
+
+subjects:
+
+- kind: User
+
+apiGroup: rbac.authorization.k8s.io
+
+name: devops-admin-user
+
+roleRef:
+
+kind: Role
+
+name: devops-admin
+
+apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+
+kind: RoleBinding
+
+metadata:
+
+name: devops-admin
+
+namespace: sde
+
+subjects:
+
+- kind: User
+
+apiGroup: rbac.authorization.k8s.io
+
+name: devops-admin-user
+
+roleRef:
+
+kind: Role
+
+name: devops-admin
+
+apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+
+kind: Role
+
+metadata:
+
+name: devops-admin
+
+namespace: aml
+
+rules:
+
+# Основные workload-ресурсы
+
+- apiGroups: ["apps"]
+
+resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
+
+verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# Pods и логи
+
+- apiGroups: [""]
+
+resources: ["pods", "pods/log", "pods/exec", "pods/portforward"]
+
+verbs: ["get", "list", "watch", "create", "delete"]
+
+# Конфиги и секреты
+
+- apiGroups: [""]
+
+resources: ["configmaps", "secrets"]
+
+verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# Сервисы и сетевое
+
+- apiGroups: [""]
+
+resources: ["services", "endpoints"]
+
+verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+- apiGroups: ["networking.k8s.io"]
+
+resources: ["ingresses"]
+
+verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# HPA
+
+- apiGroups: ["autoscaling"]
+
+resources: ["horizontalpodautoscalers"]
+
+verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# PVC
+
+- apiGroups: [""]
+
+resources: ["persistentvolumeclaims"]
+
+verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# Jobs / CronJobs
+
+- apiGroups: ["batch"]
+
+resources: ["jobs", "cronjobs"]
+
+verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# ServiceAccounts
+
+- apiGroups: [""]
+
+resources: ["serviceaccounts"]
+
+verbs: ["get", "list", "watch"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+
+kind: Role
+
+metadata:
+
+name: devops-admin
+
+namespace: sde
+
+rules:
+
+# Основные workload-ресурсы
+
+- apiGroups: ["apps"]
+
+resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
+
+verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# Pods и логи
+
+- apiGroups: [""]
+
+resources: ["pods", "pods/log", "pods/exec", "pods/portforward"]
+
+verbs: ["get", "list", "watch", "create", "delete"]
+
+# Конфиги и секреты
+
+- apiGroups: [""]
+
+resources: ["configmaps", "secrets"]
+
+verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# Сервисы и сетевое
+
+- apiGroups: [""]
+
+resources: ["services", "endpoints"]
+
+verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+- apiGroups: ["networking.k8s.io"]
+
+resources: ["ingresses"]
+
+verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# HPA
+
+- apiGroups: ["autoscaling"]
+
+resources: ["horizontalpodautoscalers"]
+
+verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# PVC
+
+- apiGroups: [""]
+
+resources: ["persistentvolumeclaims"]
+
+verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# Jobs / CronJobs
+
+- apiGroups: ["batch"]
+
+resources: ["jobs", "cronjobs"]
+
+verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# ServiceAccounts
+
+- apiGroups: [""]
+
+resources: ["serviceaccounts"]
+
+verbs: ["get", "list", "watch"]
+
+
+
+_______________________________________________________
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: devops-admin-extra
+  namespace: aml
+subjects:
+  - kind: User
+    apiGroup: rbac.authorization.k8s.io
+    name: devops-admin-user-extra
+roleRef:
+  kind: Role
+  name: devops-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: devops-admin-extra
+  namespace: sde
+subjects:
+  - kind: User
+    apiGroup: rbac.authorization.k8s.io
+    name: devops-admin-user-extra
+roleRef:
+  kind: Role
+  name: devops-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: devops-admin
+  namespace: aml
+rules:
+  # Основные workload-ресурсы
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # Pods и логи
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "pods/exec", "pods/portforward"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+
+  # Конфиги и секреты
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # Сервисы и сетевое
+  - apiGroups: [""]
+    resources: ["services", "endpoints"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # HPA
+  - apiGroups: ["autoscaling"]
+    resources: ["horizontalpodautoscalers"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # PVC
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # Jobs / CronJobs
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # ServiceAccounts
+  - apiGroups: [""]
+    resources: ["serviceaccounts"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: devops-admin
+  namespace: sde
+rules:
+  # Основные workload-ресурсы
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # Pods и логи
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "pods/exec", "pods/portforward"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+
+  # Конфиги и секреты
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # Сервисы и сетевое
+  - apiGroups: [""]
+    resources: ["services", "endpoints"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # HPA
+  - apiGroups: ["autoscaling"]
+    resources: ["horizontalpodautoscalers"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # PVC
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # Jobs / CronJobs
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # ServiceAccounts
+  - apiGroups: [""]
+    resources: ["serviceaccounts"]
+    verbs: ["get", "list", "watch"]
