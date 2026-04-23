@@ -1,0 +1,182 @@
+{
+    "gcc:latest": [
+        {
+            "Title": "Tag :latest",
+            "Severity": "Critical",
+            "Pass": false,
+            "Description": "Image gcc:latest has tag: latest",
+            "Mitigation": "The image must have a fixed tag to determine the version"
+        },
+        {
+            "Title": "Critical ports in the instructions EXPOSE",
+            "Severity": "Informational",
+            "Pass": true,
+            "Description": "The image does not have critical ports in the EXPOSE statement",
+            "Mitigation": "Make sure your containers only use protocols for remote connectivity when necessary."
+        },
+        {
+            "Title": "Default user and group",
+            "Severity": "Critical",
+            "Pass": false,
+            "Description": "User not defined",
+            "Mitigation": "The default USER and GROUP must be explicitly defined in the USER statement and do not contain root or 0. For example, USER app:app"
+        },
+        {
+            "Title": "Image LABEL metadata",
+            "Severity": "Low",
+            "Pass": false,
+            "Description": "LABEL is not defined",
+            "Mitigation": "The image must contain a set of labels specified by the developer in the LABEL instruction"
+        },
+        {
+            "Title": "The number of layers in the image",
+            "Severity": "Low",
+            "Pass": false,
+            "Description": "Number of layers in the image 8. It is necessary to minimize the number of layers if possible",
+            "Mitigation": "A good practice would be to squash all layers in the resulting image into a single layer. See docker squash, multistage build"
+        },
+        {
+            "Title": "Parameters CMD, ENTRYPOINT",
+            "Severity": "Informational",
+            "Pass": true,
+            "Description": "The image has startup parameters set in CMD ['bash']",
+            "Mitigation": "It is good practice to specify default launch parameters by developer. You must define parameters in a CMD or ENTRYPOINT statement"
+        },
+        {
+            "Title": "Checking for a suid bit file",
+            "Severity": "Critical",
+            "Pass": false,
+            "Description": "Found file",
+            "Mitigation": "The image must not contain file(s) suid bit in the image",
+            "Files": [
+                {
+                    "04592a5af467d21c9a6bdc0b420b0c716feda9eebd8a25da43dda09b50e10256": [
+                        "/usr/lib/openssh/ssh-keysign"
+                    ]
+                },
+                {
+                    "838e471be07892110fe998f879652b240b92fb1ad5cb4a91a39e8c4c9ddc94e0": [
+                        "/usr/bin/gpasswd",
+                        "/usr/bin/chsh",
+                        "/usr/bin/chfn",
+                        "/usr/bin/umount",
+                        "/usr/bin/passwd",
+                        "/usr/bin/mount",
+                        "/usr/bin/newgrp",
+                        "/usr/bin/su"
+                    ]
+                }
+            ]
+        },
+        {
+            "Title": "Checking for a sgid bit file",
+            "Severity": "Critical",
+            "Pass": false,
+            "Description": "Found file",
+            "Mitigation": "The image must not contain file(s) sgid bit in the image",
+            "Files": [
+                {
+                    "04592a5af467d21c9a6bdc0b420b0c716feda9eebd8a25da43dda09b50e10256": [
+                        "/usr/bin/ssh-agent"
+                    ]
+                },
+                {
+                    "838e471be07892110fe998f879652b240b92fb1ad5cb4a91a39e8c4c9ddc94e0": [
+                        "/usr/sbin/unix_chkpwd",
+                        "/usr/bin/expiry",
+                        "/usr/bin/chage",
+                        "/var/mail"
+                    ]
+                }
+            ]
+        },
+        {
+            "Title": "Checking for a sudo file",
+            "Severity": "Informational",
+            "Pass": true,
+            "Description": "File(s) sudo not found",
+            "Mitigation": "The image must not contain file(s) sudo in the image"
+        },
+        {
+            "Title": "Checking for a su file",
+            "Severity": "Critical",
+            "Pass": false,
+            "Description": "Found file",
+            "Mitigation": "The image must not contain file(s) su in the image",
+            "Files": [
+                {
+                    "838e471be07892110fe998f879652b240b92fb1ad5cb4a91a39e8c4c9ddc94e0": [
+                        "/usr/bin/su"
+                    ]
+                }
+            ]
+        },
+        {
+            "Title": "Checking for a sshd file",
+            "Severity": "Informational",
+            "Pass": true,
+            "Description": "File(s) sshd not found",
+            "Mitigation": "The image must not contain file(s) sshd in the image"
+        },
+        {
+            "Title": "Checking for a ssh client file",
+            "Severity": "Critical",
+            "Pass": false,
+            "Description": "Found file",
+            "Mitigation": "The image must not contain file(s) ssh client in the image",
+            "Files": [
+                {
+                    "04592a5af467d21c9a6bdc0b420b0c716feda9eebd8a25da43dda09b50e10256": [
+                        "/usr/bin/ssh"
+                    ]
+                }
+            ]
+        },
+        {
+            "Title": "Checking for a nc file",
+            "Severity": "Informational",
+            "Pass": true,
+            "Description": "File(s) nc not found",
+            "Mitigation": "The image must not contain file(s) nc in the image"
+        },
+        {
+            "Title": "Checking for a netcat file",
+            "Severity": "Informational",
+            "Pass": true,
+            "Description": "File(s) netcat not found",
+            "Mitigation": "The image must not contain file(s) netcat in the image"
+        },
+        {
+            "Title": "Checking for a socat file",
+            "Severity": "Informational",
+            "Pass": true,
+            "Description": "File(s) socat not found",
+            "Mitigation": "The image must not contain file(s) socat in the image"
+        },
+        {
+            "Title": "Compilers in the image",
+            "Severity": "Medium",
+            "Pass": false,
+            "Description": "Found file",
+            "Mitigation": "The image should not contain compilers in the file system, except when they are necessary for the operation of the application. Make sure that compilers are actually needed during execution",
+            "Files": [
+                {
+                    "f0f216b9b29b6dda64fb020853bf4682915d3d71036fb926c9f8bb939057f123": [
+                        "/usr/local/bin/g++",
+                        "/usr/local/bin/gcc",
+                        "/usr/local/bin/gccgo",
+                        "/usr/local/bin/gfortran",
+                        "/usr/local/bin/go"
+                    ]
+                }
+            ]
+        },
+        {
+            "Title": "Checking for OS type",
+            "Severity": "Informational",
+            "Pass": true,
+            "Description": "The image gcc:latest is based on the OS ['Debian GNU/Linux', '13']",
+            "Mitigation": "A good practice would be to use Distroless images to minimize the components in the image"
+        }
+    ]
+}
