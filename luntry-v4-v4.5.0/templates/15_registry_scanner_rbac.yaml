@@ -1,0 +1,13 @@
+{{- if and (.Values.imageScanner.mode.registry) (.Values.imageScanner.serviceAccount.registry.create) -}}
+{{- if or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main")) -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ quote (default (printf "%s-%s" .Release.Name "registry-scanner") .Values.imageScanner.serviceAccount.registry.name) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-registry-scanner
+    {{- include "common.labels" . | nindent 4 }}
+{{- end }}
+{{- end }}

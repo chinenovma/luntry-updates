@@ -1,0 +1,167 @@
+{{- $app := .Values.cmdAgent -}}
+{{- if $app.enabled -}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-cmd-agent
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-cmd-agent
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: {{ $app.updateStrategy.type }}
+    {{- if and (eq $app.updateStrategy.type "RollingUpdate") $app.updateStrategy.rollingUpdate }}
+    rollingUpdate:
+      {{- toYaml $app.updateStrategy.rollingUpdate | nindent 6 }}
+    {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Release.Name }}-cmd-agent
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: {{ .Release.Name }}-cmd-agent
+        {{- include "common.labels" . | nindent 8 }}
+      annotations:
+        checksum/luntry-config: '{{ include (print $.Template.BasePath "/03_config.yaml") . | sha256sum }}'
+        checksum/encryption-secret: '{{ include (print $.Template.BasePath "/03_encryption_secret.yaml") . | sha256sum }}'
+        checksum/cmd-dispatcher-tls: '{{ include (print $.Template.BasePath "/21_cmd_dispatcher_tls.yaml") . | sha256sum }}'
+        {{- if .Values.monitoring.prometheusOperatorAnnotations.enabled }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: metrics
+        {{- end }}
+        {{- if .Values.databaseConnectionConfiguration.kafka.bankVaultsInjector.enabled }}
+        {{- toYaml .Values.databaseConnectionConfiguration.bankVaultsInjectorAnnotations | nindent 8 }}
+        {{- end }}
+        {{- if $app.annotations }}
+        {{- toYaml $app.annotations | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with $app.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if or $app.serviceAccount.create $app.serviceAccount.name }}
+      serviceAccountName: {{ quote (default (printf "%s-%s" .Release.Name "cmd-agent") $app.serviceAccount.name) }}
+      {{- end }}
+      containers:
+        - name: cmd-agent
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ $app.image.name }}:{{ $app.image.tag  | default .Values.allTag }}"
+          imagePullPolicy: {{ $app.image.pullPolicy }}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" $app.securityContext "context" $) | nindent 12 }}
+          {{- if ne $app.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" $app.resourcesPreset) | nindent 12 }}
+          {{- else if ne .Values.globalResourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.globalResourcesPreset) | nindent 12 }}
+          {{- else }}
+          resources:
+            {{- toYaml $app.resources | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              port: http
+              path: /ready
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              port: http
+              path: /health
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          env:
+            {{- range $app.additionalEnvs }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+            {{- include "kafka.envs" . | nindent 12 }}
+            {{- include "logFormat.envs" . | nindent 12 }}
+            - name: LOG_LEVEL
+              value: {{ $app.log.level | quote }}
+            - name: PROM
+              value: {{ (or $app.prometheus.enabled .Values.monitoring.enabled) | quote }}
+            - name: PROF
+              value: {{ $app.profiling.enabled | quote }}
+            - name: AGENT_HTTP_ADDR
+              value: "0.0.0.0:8080"
+            - name: WATCHER_ADDR
+              value: {{ include "watcherEndpoint" . | quote }}
+            - name: CLUSTER_NAME
+              value: {{ .Values.multicluster.clusterName | quote }}
+            - name: FORWARDER_GRPC_CLIENT_MAX_MSG_SIZE
+              value: {{ .Values.develop.cmdAgent.forwarderGrpcClientMaxMsgSize | quote }}
+            - name: FORWARDER_GRPC_CLIENT_RECONNECTING_INTERVAL_DURATION
+              value: {{ .Values.develop.cmdAgent.forwarderGrpcClientReconnectingIntervalDuration | quote }}
+            - name: AGGREGATOR_GRPC_CLIENT_MAX_MSG_SIZE
+              value: {{ .Values.develop.cmdAgent.aggregatorGrpcClientMaxMsgSize | quote }}
+            - name: CMD_DISPATCHER_SERVICE_ADDR
+              {{- if and .Values.multicluster.enabled (eq .Values.multicluster.role "secondary") }}
+              value: {{ print .Values.multicluster.cmdDispatcher.host ":" .Values.multicluster.cmdDispatcher.port | quote }}
+              {{- else }}
+              value: "{{ .Release.Name }}-cmd-dispatcher.{{ .Release.Namespace }}:3338"
+              {{- end }}
+            - name: CMD_DISPATCHER_SSL_ENABLED
+              value: {{ .Values.cmdDispatcher.tls.enabled | quote }}
+            {{- if .Values.cmdDispatcher.tls.enabled }}
+            - name: CMD_DISPATCHER_SSL_CA_PATH
+              value: "/usr/share/ca-certificates/cmd-dispatcher-ca.crt"
+            {{- end }}
+          {{- if or .Values.cmdDispatcher.tls.enabled .Values.databaseConnectionConfiguration.kafka.ssl.enabled }}
+          volumeMounts:
+            {{- include "kafka.ssl.volumeMount" . | nindent 12 }}
+            {{- include "cmd-dispatcher.tls.volumeMount" . | nindent 12 }}
+          {{- end }}
+      {{- if .Values.dbwait.enabled }}
+      initContainers:
+        - name: db-wait
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ .Values.dbwait.image.name }}:{{ .Values.dbwait.image.tag  | default .Values.allTag }}"
+          imagePullPolicy: {{ .Values.dbwait.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.dbwait.resources | nindent 12 }}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" .Values.dbwait.securityContext "context" $) | nindent 12 }}
+          env:
+            - name: OBSERVATION_STRATEGY
+              value: "awaitEndpoint"
+            - name: AWAIT_ENDPOINT
+              {{- if and .Values.multicluster.enabled (eq .Values.multicluster.role "secondary") }}
+              value: {{ print "grpc://" .Values.multicluster.cmdDispatcher.host ":" .Values.multicluster.cmdDispatcher.port | quote }}
+              {{- else }}
+              value: "grpc://{{ .Release.Name }}-cmd-dispatcher.{{ .Release.Namespace }}:3338"
+              {{- end }}
+            - name: BACKOFF_INTERVAL_SEC
+              value: {{ .Values.develop.dbwait.backoffIntervalSec | quote }}
+            - name: MAX_BACKOFFS
+              value: {{ .Values.develop.dbwait.maxBackoffs | quote }}
+            - name: SSL_ENABLED
+              value: {{ .Values.cmdDispatcher.tls.enabled | quote }}
+            - name: SSL_CA_PATH
+              value: "/usr/share/ca-certificates/cmd-dispatcher-ca.crt"
+          {{- if .Values.cmdDispatcher.tls.enabled }}
+          volumeMounts:
+            {{- include "cmd-dispatcher.tls.volumeMount" . | nindent 12 }}
+          {{- end }}
+      {{- end }}
+      {{- if or .Values.cmdDispatcher.tls.enabled .Values.databaseConnectionConfiguration.kafka.ssl.enabled }}
+      volumes:
+        {{- include "kafka.ssl.volume" . | nindent 8 }}
+        {{- include "cmd-dispatcher.tls.volume" . | nindent 8 }}
+      {{- end }}
+      {{- include "imagePullSecrets" . | nindent 6 }}
+{{- end }}

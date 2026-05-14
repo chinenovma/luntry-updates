@@ -1,0 +1,11 @@
+{{- if and (.Values.auditLogAnalyzer.enabled) (.Values.auditLogAnalyzer.serviceAccount.create) -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ quote (default (printf "%s-%s" .Release.Name "audit-log-analyzer") .Values.auditLogAnalyzer.serviceAccount.name) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-audit-log-analyzer
+    {{- include "common.labels" . | nindent 4 }}
+{{- end }}

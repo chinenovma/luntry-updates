@@ -1,0 +1,11 @@
+{{- if and (.Values.cmdAgent.enabled) (.Values.cmdAgent.serviceAccount.create) -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ quote (default (printf "%s-%s" .Release.Name "cmd-agent") .Values.cmdAgent.serviceAccount.name) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-cmd-agent
+    {{- include "common.labels" . | nindent 4 }}
+{{- end }}

@@ -1,0 +1,503 @@
+{{- $app := .Values.kafka -}}
+{{- $db := .Values.databaseConnectionConfiguration }}
+{{- if $app.enabled -}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-kafka
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-kafka
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: {{ $app.updateStrategy.type }}
+    {{- if and (eq $app.updateStrategy.type "RollingUpdate") $app.updateStrategy.rollingUpdate }}
+    rollingUpdate:
+      {{- toYaml $app.updateStrategy.rollingUpdate | nindent 6 }}
+    {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Release.Name }}-kafka
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: {{ .Release.Name }}-kafka
+      annotations:
+        checksum/auth-kafka: '{{ include (print $.Template.BasePath "/kafka/kafka_auth.yaml") . | sha256sum }}'
+        checksum/tls-kafka: '{{ include (print $.Template.BasePath "/kafka/kafka_tls_secret.yaml") . | sha256sum }}'
+        {{- if and .Values.monitoring.prometheusOperatorAnnotations.enabled $app.metricExporter.enabled }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: metrics
+        {{- end }}
+        {{- if $db.kafka.bankVaultsInjector.enabled }}
+        {{- toYaml $db.bankVaultsInjectorAnnotations | nindent 8 }}
+        {{- end }}
+        {{- if $app.annotations }}
+        {{- toYaml $app.annotations | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with $app.nodeSelector}}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      hostname: "kafka"
+      securityContext:
+        {{- include "renderSecurityContext" (dict "secContext" $app.podSecurityContext "context" $) | nindent 8 }}
+      {{- if or $app.serviceAccount.create $app.serviceAccount.name }}
+      serviceAccountName: {{ quote (default (printf "%s-%s" .Release.Name "kafka") $app.serviceAccount.name) }}
+      {{- end }}
+      {{- if or .Values.develop.kafka.ssl.enabled $app.initCleanupData }}
+      initContainers:
+      {{- if .Values.develop.kafka.ssl.enabled }}
+      - name: pem-to-keystore
+        imagePullPolicy: {{ $app.image.pullPolicy | quote }}
+        image: "{{ $app.image.registry | default .Values.imageCredentials.registry }}/{{ $app.image.name }}:{{ $app.image.tag }}"
+        securityContext:
+          {{- include "renderSecurityContext" (dict "secContext" $app.securityContext "context" $) | nindent 10 }}
+        resources:
+          {{- toYaml $app.pemToKeystore.resources | nindent 10 }}
+        env:
+          - name: keyfile
+            value: /var/run/secrets/kafka/tls.key
+          - name: crtfile
+            value: /var/run/secrets/kafka/tls.crt
+          - name: rootcafile
+            value: /var/run/secrets/kafka/ca.crt
+          - name: keystore_pkcs12
+            value: /var/run/secrets/keystores/keystore.p12
+          - name: keystore_jks
+            value: /var/run/secrets/keystores/kafka.keystore.jks
+          - name: keystore_trust
+            value: /var/run/secrets/keystores/kafka.truststore.jks
+          - name: password
+            value: ajnTaDSvctZjQBRV
+        command: ['/bin/sh']
+        args:
+          - '-c'
+          - |
+            apk add openssl
+            openssl pkcs12 -export -inkey $keyfile -in $crtfile -out $keystore_pkcs12 -password pass:$password
+            keytool -importkeystore -noprompt -srckeystore $keystore_pkcs12 -srcstoretype pkcs12 -srcstorepass $password -destkeystore $keystore_jks -deststoretype jks -storepass $password
+            keytool -import -noprompt -trustcacerts -keystore $keystore_trust -alias CARoot -file $rootcafile -storepass $password
+            chown 1000:1000 $keystore_jks $keystore_trust
+            chmod 600 $keystore_jks $keystore_trust
+        volumeMounts:
+          - name: keystore-volume
+            mountPath: /var/run/secrets/keystores
+          - name: kafka-tls
+            mountPath: /var/run/secrets/kafka
+      {{- end }}
+      {{- if $app.initCleanupData }}
+      - name: cleanup-data
+        imagePullPolicy: {{ $app.image.pullPolicy | quote }}
+        image: "{{ $app.image.registry | default .Values.imageCredentials.registry }}/{{ $app.image.name }}:{{ $app.image.tag }}"
+        securityContext:
+          {{- include "renderSecurityContext" (dict "secContext" $app.securityContext "context" $) | nindent 10 }}
+        resources:
+          {{- toYaml $app.pemToKeystore.resources | nindent 10 }}
+        command: ['/bin/sh']
+        args: ['-c', 'rm -rf /kafka/*']
+        volumeMounts:
+          - name: kafka-volume
+            mountPath: /kafka
+      {{- end }}
+      {{- end }}
+      containers:
+      - name: kafka
+        imagePullPolicy: {{ $app.image.pullPolicy | quote }}
+        image: "{{ $app.image.registry | default .Values.imageCredentials.registry }}/{{ $app.image.name }}:{{ $app.image.tag }}"
+        securityContext:
+          {{- include "renderSecurityContext" (dict "secContext" $app.securityContext "context" $) | nindent 10 }}
+        {{- if eq $app.resourcesPreset "none" }}
+        resources:
+          {{- toYaml $app.resources | nindent 10 }}
+        {{- else }}
+        resources: {{- include "common.resources.preset" (dict "type" $app.resourcesPreset) | nindent 10 }}
+        {{- end }}
+        env:
+          {{- range $app.additionalEnvs }}
+          - name: {{ .name }}
+            value: {{ .value | quote }}
+          {{- end }}
+          {{- if and (not $db.kafka.customSecret.secretName) (not $db.kafka.bankVaultsInjector.enabled) }}
+          - name: KAFKA_CLIENT_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-kafka-auth
+                key: KAFKA_CLIENT_USER
+          - name: KAFKA_CLIENT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-kafka-auth
+                key: KAFKA_CLIENT_PASSWORD
+          - name: KAFKA_INTER_BROKER_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-kafka-auth
+                key: KAFKA_INTER_BROKER_USER
+          - name: KAFKA_INTER_BROKER_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-kafka-auth
+                key: KAFKA_INTER_BROKER_PASSWORD
+          - name: KAFKA_CONTROLLER_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-kafka-auth
+                key: KAFKA_CONTROLLER_USER
+          - name: KAFKA_CONTROLLER_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-kafka-auth
+                key: KAFKA_CONTROLLER_PASSWORD
+          - name: KAFKA_LISTENER_NAME_CONTROLLER_PLAIN_SASL_JAAS_CONFIG
+            value: org.apache.kafka.common.security.plain.PlainLoginModule required username="$(KAFKA_CONTROLLER_USER)" password="$(KAFKA_CONTROLLER_PASSWORD)" user_$(KAFKA_CONTROLLER_USER)="$(KAFKA_CONTROLLER_PASSWORD)";
+          {{- if $app.externalListener.enabled }}
+          - name: KAFKA_LISTENER_NAME_EXTERNAL_PLAIN_SASL_JAAS_CONFIG
+            value: org.apache.kafka.common.security.plain.PlainLoginModule required user_$(KAFKA_CLIENT_USER)="$(KAFKA_CLIENT_PASSWORD)";
+          {{- end }}
+          - name: KAFKA_LISTENER_NAME_CLIENT_PLAIN_SASL_JAAS_CONFIG
+            value: org.apache.kafka.common.security.plain.PlainLoginModule required user_$(KAFKA_CLIENT_USER)="$(KAFKA_CLIENT_PASSWORD)";
+          - name: KAFKA_LISTENER_NAME_INTERNAL_PLAIN_SASL_JAAS_CONFIG
+            value: org.apache.kafka.common.security.plain.PlainLoginModule required username="$(KAFKA_INTER_BROKER_USER)" password="$(KAFKA_INTER_BROKER_PASSWORD)" user_$(KAFKA_INTER_BROKER_USER)="$(KAFKA_INTER_BROKER_PASSWORD)"  user_$(KAFKA_CLIENT_USER)="$(KAFKA_CLIENT_PASSWORD)";
+          - name: KAFKA_LISTENER_NAME_INTERNAL_SCRAM___SHA___256_SASL_JAAS_CONFIG
+            value: org.apache.kafka.common.security.scram.ScramLoginModule required username="$(KAFKA_INTER_BROKER_USER)" password="$(KAFKA_INTER_BROKER_PASSWORD)";
+          - name: KAFKA_LISTENER_NAME_INTERNAL_SCRAM___SHA___512_SASL_JAAS_CONFIG
+            value: org.apache.kafka.common.security.scram.ScramLoginModule required username="$(KAFKA_INTER_BROKER_USER)" password="$(KAFKA_INTER_BROKER_PASSWORD)";
+          {{- else if $db.kafka.customSecret.secretName }}
+          - name: KAFKA_CLIENT_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ $db.kafka.customSecret.secretName }}
+                key: {{ $db.kafka.customSecret.userKey }}
+          - name: KAFKA_CLIENT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ $db.kafka.customSecret.secretName }}
+                key: {{ $db.kafka.customSecret.passwordKey }}
+          - name: KAFKA_INTER_BROKER_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ $db.kafka.customSecret.secretName }}
+                key: {{ $db.kafka.customSecret.interBrokerUserKey }}
+          - name: KAFKA_INTER_BROKER_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ $db.kafka.customSecret.secretName }}
+                key: {{ $db.kafka.customSecret.interBrokerPasswordKey }}
+          - name: KAFKA_CONTROLLER_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ $db.kafka.customSecret.secretName }}
+                key: {{ $db.kafka.customSecret.controllerUserKey }}
+          - name: KAFKA_CONTROLLER_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ $db.kafka.customSecret.secretName }}
+                key: {{ $db.kafka.customSecret.controllerPasswordKey }}
+          - name: KAFKA_LISTENER_NAME_CONTROLLER_PLAIN_SASL_JAAS_CONFIG
+            value: org.apache.kafka.common.security.plain.PlainLoginModule required username="$(KAFKA_CONTROLLER_USER)" password="$(KAFKA_CONTROLLER_PASSWORD)" user_$(KAFKA_CONTROLLER_USER)="$(KAFKA_CONTROLLER_PASSWORD)";
+          {{- if $app.externalListener.enabled }}
+          - name: KAFKA_LISTENER_NAME_EXTERNAL_SASL_ENABLED_MECHANISMS
+            value: "PLAIN"
+          - name: KAFKA_LISTENER_NAME_EXTERNAL_PLAIN_SASL_JAAS_CONFIG
+            value: org.apache.kafka.common.security.plain.PlainLoginModule required user_$(KAFKA_CLIENT_USER)="$(KAFKA_CLIENT_PASSWORD)";
+          {{- end }}
+          - name: KAFKA_LISTENER_NAME_CLIENT_PLAIN_SASL_JAAS_CONFIG
+            value: org.apache.kafka.common.security.plain.PlainLoginModule required user_$(KAFKA_CLIENT_USER)="$(KAFKA_CLIENT_PASSWORD)";
+          - name: KAFKA_LISTENER_NAME_INTERNAL_PLAIN_SASL_JAAS_CONFIG
+            value: org.apache.kafka.common.security.plain.PlainLoginModule required username="$(KAFKA_INTER_BROKER_USER)" password="$(KAFKA_INTER_BROKER_PASSWORD)" user_$(KAFKA_INTER_BROKER_USER)="$(KAFKA_INTER_BROKER_PASSWORD)"  user_$(KAFKA_CLIENT_USER)="$(KAFKA_CLIENT_PASSWORD)";
+          - name: KAFKA_LISTENER_NAME_INTERNAL_SCRAM___SHA___256_SASL_JAAS_CONFIG
+            value: org.apache.kafka.common.security.scram.ScramLoginModule required username="$(KAFKA_INTER_BROKER_USER)" password="$(KAFKA_INTER_BROKER_PASSWORD)";
+          - name: KAFKA_LISTENER_NAME_INTERNAL_SCRAM___SHA___512_SASL_JAAS_CONFIG
+            value: org.apache.kafka.common.security.scram.ScramLoginModule required username="$(KAFKA_INTER_BROKER_USER)" password="$(KAFKA_INTER_BROKER_PASSWORD)";
+          {{- else if $db.kafka.bankVaultsInjector.enabled }}
+          - name: KAFKA_LISTENER_NAME_CONTROLLER_PLAIN_SASL_JAAS_CONFIG
+            value: org.apache.kafka.common.security.plain.PlainLoginModule required username="{{ printf "${%s}" $db.kafka.bankVaultsInjector.controllerUserKey }}" password="{{ printf "${%s}" $db.kafka.bankVaultsInjector.controllerPasswordKey }}" user_{{ printf "${%s}" $db.kafka.bankVaultsInjector.controllerUserKey }}="{{ printf "${%s}" $db.kafka.bankVaultsInjector.controllerPasswordKey }}";
+          {{- if $app.externalListener.enabled }}
+          - name: KAFKA_LISTENER_NAME_EXTERNAL_PLAIN_SASL_JAAS_CONFIG
+            value: org.apache.kafka.common.security.plain.PlainLoginModule required user_{{ printf "${%s}" $db.kafka.bankVaultsInjector.userKey }}="{{ printf "${%s}" $db.kafka.bankVaultsInjector.passwordKey }}";
+          {{- end }}
+          - name: KAFKA_LISTENER_NAME_CLIENT_PLAIN_SASL_JAAS_CONFIG
+            value: org.apache.kafka.common.security.plain.PlainLoginModule required user_{{ printf "${%s}" $db.kafka.bankVaultsInjector.userKey }}="{{ printf "${%s}" $db.kafka.bankVaultsInjector.passwordKey }}";
+          - name: KAFKA_LISTENER_NAME_INTERNAL_PLAIN_SASL_JAAS_CONFIG
+            value: org.apache.kafka.common.security.plain.PlainLoginModule required username="{{ printf "${%s}" $db.kafka.bankVaultsInjector.interBrokerUserKey }}" password="{{ printf "${%s}" $db.kafka.bankVaultsInjector.interBrokerPasswordKey }}" user_{{ printf "${%s}" $db.kafka.bankVaultsInjector.interBrokerUserKey }}="{{ printf "${%s}" $db.kafka.bankVaultsInjector.interBrokerPasswordKey }}"  user_{{ printf "${%s}" $db.kafka.bankVaultsInjector.userKey }}="{{ printf "${%s}" $db.kafka.bankVaultsInjector.passwordKey }}";
+          - name: KAFKA_LISTENER_NAME_INTERNAL_SCRAM___SHA___256_SASL_JAAS_CONFIG
+            value: org.apache.kafka.common.security.scram.ScramLoginModule required username="{{ printf "${%s}" $db.kafka.bankVaultsInjector.interBrokerUserKey }}" password="{{ printf "${%s}" $db.kafka.bankVaultsInjector.interBrokerPasswordKey }}";
+          - name: KAFKA_LISTENER_NAME_INTERNAL_SCRAM___SHA___512_SASL_JAAS_CONFIG
+            value: org.apache.kafka.common.security.scram.ScramLoginModule required username="{{ printf "${%s}" $db.kafka.bankVaultsInjector.interBrokerUserKey }}" password="{{ printf "${%s}" $db.kafka.bankVaultsInjector.interBrokerPasswordKey }}";
+          {{- end }}
+          # Listeners configuration
+          - name: KAFKA_LISTENERS
+            value: "CLIENT://:9092,INTERNAL://:9094,CONTROLLER://:9093{{ $app.externalListener.enabled | ternary ",EXTERNAL://:9095" "" }}"
+          - name: KAFKA_ADVERTISED_LISTENERS
+            value: "CLIENT://{{ .Release.Name }}-kafka.{{ .Release.Namespace }}:9092,INTERNAL://{{ .Release.Name }}-kafka.{{ .Release.Namespace }}:9094{{ $app.externalListener.enabled | ternary (printf ",EXTERNAL://%s" $app.externalListener.host ) "" }}"
+          {{- if and .Values.develop.kafka.auth.enabled .Values.develop.kafka.ssl.enabled }}
+          - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+            value: "CLIENT:SASL_SSL,INTERNAL:SASL_PLAINTEXT,CONTROLLER:SASL_PLAINTEXT{{ $app.externalListener.enabled | ternary ",EXTERNAL:SASL_SSL" "" }}"
+          - name: KAFKA_SSL_KEYSTORE_LOCATION
+            value: "/var/run/secrets/keystores/kafka.keystore.jks"
+          - name: KAFKA_SSL_KEYSTORE_PASSWORD
+            value: "ajnTaDSvctZjQBRV"
+          - name: KAFKA_SSL_KEY_PASSWORD
+            value: "ajnTaDSvctZjQBRV"
+          - name: KAFKA_SSL_TRUSTSTORE_LOCATION
+            value: "/var/run/secrets/keystores/kafka.truststore.jks"
+          - name: KAFKA_SSL_TRUSTSTORE_PASSWORD
+            value: "ajnTaDSvctZjQBRV"
+          {{- else if .Values.develop.kafka.auth.enabled }}
+          - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+            value: "CLIENT:SASL_PLAINTEXT,INTERNAL:SASL_PLAINTEXT,CONTROLLER:SASL_PLAINTEXT{{ $app.externalListener.enabled | ternary ",EXTERNAL:SASL_PLAINTEXT" "" }}"
+          {{- else }}
+          - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+            value: "CLIENT:PLAINTEXT,INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT{{ $app.externalListener.enabled | ternary ",EXTERNAL:PLAINTEXT" "" }}"
+          {{- end }}
+          #
+          - name: CLUSTER_ID
+            value: {{ .Values.develop.kafka.clusterId | quote }}
+          - name: KAFKA_NODE_ID
+            value: "0"
+          - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
+            value: "false"
+          - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+            value: "1"
+          # KRaft process roles
+          - name: KAFKA_PROCESS_ROLES
+            value: "controller,broker"
+          - name: KAFKA_CONTROLLER_LISTENER_NAMES
+            value: "CONTROLLER"
+          - name: KAFKA_CONTROLLER_QUORUM_VOTERS
+            value: "0@kafka:9093"
+          - name: KAFKA_SASL_MECHANISM_CONTROLLER_PROTOCOL
+            value: "PLAIN"
+          - name: KAFKA_LISTENER_NAME_CONTROLLER_SASL_ENABLED_MECHANISMS
+            value: "PLAIN"
+          # Kafka data logs directory
+          - name: KAFKA_LOG_DIR
+            value: "/kafka/data"
+          # Kafka application logs directory
+          - name: KAFKA_LOGS_DIR
+            value: "/kafka/logs"
+          - name: KAFKA_SASL_ENABLED_MECHANISMS
+            value: "PLAIN,SCRAM-SHA-256,SCRAM-SHA-512"
+          # Interbroker configuration
+          - name: KAFKA_INTER_BROKER_LISTENER_NAME
+            value: "INTERNAL"
+          - name: KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL
+            value: "PLAIN"
+          # Listeners SASL JAAS configuration
+          - name: KAFKA_LISTENER_NAME_CLIENT_SCRAM___SHA___256_SASL_JAAS_CONFIG
+            value: "org.apache.kafka.common.security.scram.ScramLoginModule required;"
+          - name: KAFKA_LISTENER_NAME_CLIENT_SCRAM___SHA___512_SASL_JAAS_CONFIG
+            value: "org.apache.kafka.common.security.scram.ScramLoginModule required;"
+          {{- if $app.externalListener.enabled }}
+          - name: KAFKA_LISTENER_NAME_EXTERNAL_SCRAM___SHA___256_SASL_JAAS_CONFIG
+            value: "org.apache.kafka.common.security.scram.ScramLoginModule required;"
+          - name: KAFKA_LISTENER_NAME_EXTERNAL_SCRAM___SHA___512_SASL_JAAS_CONFIG
+            value: "org.apache.kafka.common.security.scram.ScramLoginModule required;"
+          {{- end }}
+          # End of SASL JAAS configuration
+          - name: KAFKA_HEAP_OPTS
+            value: {{ $app.kafkaHeapOpts | quote }}
+          {{- if .Values.develop.kafka.profiler.enabled }}
+          - name: KAFKA_JMX_OPTS
+            value: "-Djava.rmi.server.hostname=localhost -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=8099 -Dcom.sun.management.jmxremote.rmi.port=8099 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+          {{- end }}
+        ports:
+          - name: client
+            containerPort: 9092
+          {{- if $app.externalListener.enabled }}
+          - name: external
+            containerPort: 9095
+          {{- end }}
+        livenessProbe:
+          exec:
+            command: ["pgrep", "-f", "kafka"]
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+          periodSeconds: 10
+          successThreshold: 1
+        readinessProbe:
+          tcpSocket:
+            port: 9092
+          initialDelaySeconds: 5
+          failureThreshold: 6
+          timeoutSeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+        startupProbe:
+          tcpSocket:
+            port: 9092
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 1
+          failureThreshold: 15
+          successThreshold: 1
+        volumeMounts:
+          - name: kafka-volume
+            mountPath: /kafka
+          {{- if .Values.develop.kafka.ssl.enabled }}
+          - name: keystore-volume
+            mountPath: /var/run/secrets/keystores
+          {{- end }}
+      {{- if $app.metricExporter.enabled }}
+      - name: kminion
+        image: "{{ .Values.imageCredentials.registry }}/{{ $app.metricExporter.image.name }}:{{ $app.metricExporter.image.tag }}"
+        imagePullPolicy: {{ $app.metricExporter.image.pullPolicy | quote }}
+        securityContext:
+          {{- toYaml $app.metricExporter.securityContext | nindent 10 }}
+        {{- if eq $app.metricExporter.resourcesPreset "none" }}
+        resources:
+          {{- toYaml $app.metricExporter.resources | nindent 10 }}
+        {{- else }}
+        resources: {{- include "common.resources.preset" (dict "type" $app.metricExporter.resourcesPreset) | nindent 10 }}
+        {{- end }}
+        ports:
+          - name: metrics
+            containerPort: 8080
+        env:
+          - name: LOGGER_LEVEL
+            value: info
+          - name: KAFKA_BROKERS
+            value: "127.0.0.1:9092"
+          - name: EXPORTER_PORT
+            value: "8080"
+          - name: KAFKA_SASL_ENABLED
+            value: "true"
+          {{- if and (not $db.kafka.customSecret.secretName) (not $db.kafka.bankVaultsInjector.enabled) }}
+          - name: KAFKA_SASL_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-kafka-auth
+                key: KAFKA_CLIENT_USER
+          - name: KAFKA_SASL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-kafka-auth
+                key: KAFKA_CLIENT_PASSWORD
+          {{- else if $db.kafka.customSecret.secretName }}
+          - name: KAFKA_SASL_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: {{ $db.kafka.customSecret.secretName }}
+                key: {{ $db.kafka.customSecret.userKey }}
+          - name: KAFKA_SASL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ $db.kafka.customSecret.secretName }}
+                key: {{ $db.kafka.customSecret.passwordKey }}
+          {{- else if $db.kafka.bankVaultsInjector.enabled }}
+          - name: KAFKA_SASL_USERNAME
+            value: {{ $db.kafka.bankVaultsInjector.userKey }}
+          - name: KAFKA_SASL_PASSWORD
+            value: {{ $db.kafka.bankVaultsInjector.passwordKey }}
+          {{- end }}
+        {{- if .Values.develop.kafka.ssl.enabled }}
+          - name: KAFKA_TLS_ENABLED
+            value: "true"
+          - name: KAFKA_TLS_INSECURESKIPTLSVERIFY
+            value: "true"
+        {{- end }}
+      {{- end }}
+      {{- if $app.console.enabled }}
+      - name: console
+        image: "{{ .Values.imageCredentials.registry }}/{{ $app.console.image.name }}:{{ $app.console.image.tag }}"
+        imagePullPolicy: {{ $app.console.image.pullPolicy | quote }}
+        securityContext:
+          {{- toYaml $app.console.securityContext | nindent 10 }}
+        {{- if eq $app.console.resourcesPreset "none" }}
+        resources:
+          {{- toYaml $app.console.resources | nindent 10 }}
+        {{- else }}
+        resources: {{- include "common.resources.preset" (dict "type" $app.console.resourcesPreset) | nindent 10 }}
+        {{- end }}
+        ports:
+          - name: console
+            containerPort: 8081
+        env:
+          - name: KAFKA_BROKERS
+            value: "127.0.0.1:9092"
+          - name: SERVER_LISTENPORT
+            value: "8081"
+          - name: KAFKA_SASL_ENABLED
+            value: "true"
+          {{- if and (not $db.kafka.customSecret.secretName) (not $db.kafka.bankVaultsInjector.enabled) }}
+          - name: KAFKA_SASL_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-kafka-auth
+                key: KAFKA_CLIENT_USER
+          - name: KAFKA_SASL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-kafka-auth
+                key: KAFKA_CLIENT_PASSWORD
+          {{- else if $db.kafka.customSecret.secretName }}
+          - name: KAFKA_SASL_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: {{ $db.kafka.customSecret.secretName }}
+                key: {{ $db.kafka.customSecret.userKey }}
+          - name: KAFKA_SASL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ $db.kafka.customSecret.secretName }}
+                key: {{ $db.kafka.customSecret.passwordKey }}
+          {{- else if $db.kafka.bankVaultsInjector.enabled }}
+          - name: KAFKA_SASL_USERNAME
+            value: {{ $db.kafka.bankVaultsInjector.userKey }}
+          - name: KAFKA_SASL_PASSWORD
+            value: {{ $db.kafka.bankVaultsInjector.passwordKey }}
+          {{- end }}
+        {{- if .Values.develop.kafka.ssl.enabled }}
+          - name: KAFKA_TLS_ENABLED
+            value: "true"
+          - name: KAFKA_TLS_INSECURESKIPTLSVERIFY
+            value: "true"
+        {{- end }}
+      {{- end }}
+      volumes:
+        - name: kafka-volume
+          {{- if eq ($app.pvc.type | lower) "emptydir" }}
+          emptyDir:
+            sizeLimit: {{ $app.pvc.size | quote }}
+          {{- else if eq ($app.pvc.type | lower) "genericephemeralvolume" }}
+          ephemeral:
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - {{ $app.pvc.accessMode }}
+                storageClassName: {{ $app.pvc.storageClass }}
+                resources:
+                  requests:
+                    storage: {{ $app.pvc.size | quote }}
+          {{- else if eq ($app.pvc.type | lower) "pvc" }}
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-kafka
+          {{- else }}
+          {{- fail "incorrect volume type in kafka.pvc.type" }}
+          {{- end }}
+        {{- if .Values.develop.kafka.ssl.enabled }}
+        - name: keystore-volume
+          emptyDir:
+            sizeLimit: 1Mi
+            medium: Memory
+        - name: kafka-tls
+          secret:
+            secretName: {{ .Values.develop.kafka.ssl.secretName }}
+        {{- end }}
+      {{- include "imagePullSecrets" . | nindent 6 }}
+{{- end }}

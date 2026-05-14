@@ -1,0 +1,11 @@
+{{- if and (.Values.dataProvider.enabled) (.Values.dataProvider.serviceAccount.create) -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ quote (default (printf "%s-%s" .Release.Name "data-provider") .Values.dataProvider.serviceAccount.name) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-data-provider
+    {{- include "common.labels" . | nindent 4 }}
+{{- end }}

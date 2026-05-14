@@ -1,0 +1,30 @@
+{{- if and (.Values.postgres.pv.enabled) (.Values.postgres.enabled) (not .Values.postgres.pvc.emptyDir) -}}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-postgres
+  namespace: {{ .Release.Namespace }}
+  labels:
+    type: local
+  annotations:
+    pv.beta.kubernetes.io/gid: {{ .Values.postgres.podSecurityContext.fsGroup | quote }}
+spec:
+  {{- if or .Values.postgres.pv.storageClass.create .Values.postgres.pv.storageClass.name }}
+  storageClassName: {{ .Values.postgres.pv.storageClass.name | default (printf "%s-local-storage" .Release.Name) }}
+  {{- end }}
+  persistentVolumeReclaimPolicy: {{ .Values.postgres.pv.reclaimPolicy | default "Recycle" }}
+  capacity:
+    storage: {{ .Values.postgres.pvc.size }}
+  volumeMode: Filesystem
+  accessModes:
+    - {{ .Values.postgres.pvc.accessMode }}
+  local:
+    path: {{ .Values.postgres.pv.localPath }}
+{{- with .Values.postgres.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms }}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,42 @@
+{{- if .Values.exporter.enabled -}}
+{{- if or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main")) -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-exporter
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-exporter
+    {{- include "common.labels" . | nindent 4 }}
+    {{- with .Values.exporter.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- if .Values.exporter.serviceAnnotations }}
+  annotations:
+    {{- toYaml .Values.exporter.serviceAnnotations | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    app.kubernetes.io/component: {{ .Release.Name }}-exporter
+  type: {{ .Values.exporter.service.type }}
+  ports:
+    - name: grpc
+      protocol: TCP
+      port: 3337
+      targetPort: 3337
+      {{- if and (eq .Values.exporter.service.type "NodePort") (.Values.exporter.service.nodePortGrpc)}}
+      nodePort: {{ .Values.exporter.service.nodePortGrpc }}
+      {{- end }}
+      {{- if .Values.exporter.service.appProtocol }}
+      appProtocol: {{ .Values.exporter.service.appProtocol }}
+      {{- end }}
+    - name: prometheus
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+      {{- if and (eq .Values.exporter.service.type "NodePort") (.Values.exporter.service.nodePortMetrics)}}
+      nodePort: {{ .Values.exporter.service.nodePortMetrics }}
+      {{- end }}
+{{- end }}
+{{- end }}

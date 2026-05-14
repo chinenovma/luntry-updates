@@ -1,0 +1,18 @@
+{{- if and .Values.auditLogAnalyzer.enabled ( or .Values.monitoring.enabled .Values.auditLogAnalyzer.prometheus.enabled ) .Values.monitoring.victoriaMetricsScrapeCR.enabled }}
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMPodScrape
+metadata:
+  name: "audit-log-analyzer"
+  namespace: {{ .Release.Namespace }}
+spec:
+  podMetricsEndpoints:
+    - port: probe-port
+      scheme: http
+  jobLabel: "app.kubernetes.io/component"
+  namespaceSelector:
+    matchNames: [{{ .Release.Namespace | quote }}]
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Release.Name }}-audit-log-analyzer
+{{- end }}

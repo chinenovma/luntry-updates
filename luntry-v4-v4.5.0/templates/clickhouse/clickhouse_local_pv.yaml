@@ -1,0 +1,32 @@
+{{- if and (.Values.clickhouse.pv.enabled) (.Values.clickhouse.enabled) (not .Values.clickhouse.pvc.emptyDir) }}
+{{- if or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main")) -}}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-clickhouse
+  namespace: {{ .Release.Namespace }}
+  labels:
+    type: local
+  annotations:
+    pv.beta.kubernetes.io/gid: {{ .Values.clickhouse.podSecurityContext.fsGroup | quote }}
+spec:
+  {{- if or .Values.clickhouse.pv.storageClass.create .Values.clickhouse.pv.storageClass.name }}
+  storageClassName: {{ .Values.clickhouse.pv.storageClass.name | default (printf "%s-local-storage" .Release.Name) }}
+  {{- end }}
+  persistentVolumeReclaimPolicy: {{ .Values.clickhouse.pv.reclaimPolicy | default "Recycle" }}
+  capacity:
+    storage: {{ .Values.clickhouse.pvc.size }}
+  volumeMode: Filesystem
+  accessModes:
+    - {{ .Values.clickhouse.pvc.accessMode }}
+  local:
+    path: {{ .Values.clickhouse.pv.localPath }}
+{{- with .Values.clickhouse.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms }}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- end }}
+{{- end }}

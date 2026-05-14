@@ -1,0 +1,14 @@
+{{- if .Values.dataProvider.oidc.refreshKey }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-data-provider-oidc
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: "data-provider"
+    {{- include "common.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  OIDC_REFRESH_ENC_KEY: {{ .Values.dataProvider.secrets.oidc.refreshKey | quote }}
+{{- end }}

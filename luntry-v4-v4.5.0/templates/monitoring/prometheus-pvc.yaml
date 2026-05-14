@@ -1,0 +1,27 @@
+{{- if and (.Values.monitoring.enabled) (.Values.monitoring.prometheus.enabled) (eq .Values.monitoring.prometheus.pvc.type "pvc") -}}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-prometheus
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-prometheus
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+{{- if or .Values.monitoring.prometheus.pvc.storageClass .Values.monitoring.prometheus.pv.enabled }}
+{{- if .Values.monitoring.prometheus.pvc.storageClass }}
+  storageClassName: {{ .Values.monitoring.prometheus.pvc.storageClass | quote }}
+{{- else if and .Values.monitoring.prometheus.pv.enabled (not .Values.monitoring.prometheus.pv.storageClass.create) .Values.monitoring.prometheus.pv.storageClass.name }}
+  storageClassName: {{ .Values.monitoring.prometheus.pv.storageClass.name | quote }}
+{{- else if and .Values.monitoring.prometheus.pv.enabled .Values.monitoring.prometheus.pv.storageClass.create (not .Values.monitoring.prometheus.pv.storageClass.name) }}
+  storageClassName: {{ .Release.Name }}-local-storage
+  volumeName: {{ .Release.Name }}-prometheus
+{{- end }}
+{{- end }}
+  accessModes:
+    - {{ .Values.monitoring.prometheus.pvc.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.monitoring.prometheus.pvc.size }}
+{{- end -}}

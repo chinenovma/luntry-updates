@@ -1,0 +1,25 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.prometheus.enabled -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-prometheus
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}-prometheus
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/part-of: {{ .Chart.Name }}
+  {{- if .Values.monitoring.prometheus.serviceAnnotations }}
+  annotations:
+    {{- toYaml .Values.monitoring.prometheus.serviceAnnotations | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    app.kubernetes.io/name: {{ .Release.Name }}-prometheus
+    app.kubernetes.io/part-of: {{ .Chart.Name }}
+  type: {{ .Values.monitoring.prometheus.service.type | quote }}
+  ports:
+  - name: web
+    protocol: TCP
+    port: 9090
+{{- end -}}

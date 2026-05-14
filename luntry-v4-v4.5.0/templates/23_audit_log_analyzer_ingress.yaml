@@ -1,0 +1,47 @@
+{{- $app := .Values.auditLogAnalyzer }}
+{{- $ingress := $app.ingress }}
+{{- if $ingress.enabled -}}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-audit-log-analyzer-ingress
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-audit-log-analyzer-ingress
+    {{- include "common.labels" . | nindent 4 }}
+    {{- with $ingress.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.globalIngress.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- with $ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.globalIngress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if $ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ $ingress.domainName }}
+      secretName: {{ default .Values.globalIngress.tlsSecretName $ingress.tls.secretName }}
+  {{- end }}
+  {{- if or .Values.globalIngress.ingressClassName $ingress.ingressClassName }}
+  ingressClassName: {{ default .Values.globalIngress.ingressClassName $ingress.ingressClassName }}
+  {{- end }}
+  rules:
+    - host: {{ $ingress.domainName | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-audit-log-analyzer
+                port:
+                  number: 8081
+{{- end }}

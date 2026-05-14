@@ -1,0 +1,29 @@
+{{- if .Values.collector.enabled -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-collector
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-collector
+    {{- include "common.labels" . | nindent 4 }}
+  {{- if .Values.collector.serviceAnnotations }}
+  annotations:
+    {{- toYaml .Values.collector.serviceAnnotations | nindent 4 }}
+  {{- end }}
+spec:
+  clusterIP: None
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/component: {{ .Release.Name }}-collector
+  ports:
+    - name: grpc
+      protocol: TCP
+      port: 31337
+{{- if or .Values.collector.prometheus.enabled .Values.collector.profiling.enabled }}
+    - name: http
+      protocol: TCP
+      port: 8080
+{{- end }}
+{{- end }}

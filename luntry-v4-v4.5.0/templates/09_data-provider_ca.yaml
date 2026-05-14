@@ -1,0 +1,12 @@
+{{- if .Values.dataProvider.ca.crtBase64 }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-data-provider-ca
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-data-provider
+    {{- include "common.labels" . | nindent 4 }}
+data:
+  ca.crt: {{ .Values.dataProvider.ca.crtBase64 }}
+{{- end }}

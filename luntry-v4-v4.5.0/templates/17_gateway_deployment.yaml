@@ -1,0 +1,224 @@
+{{- $app := .Values.gateway -}}
+{{- $db := .Values.databaseConnectionConfiguration }}
+{{- if $app.enabled -}}
+{{- if or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main")) -}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-gateway
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-gateway
+    {{- include "common.labels" . | nindent 4 }}
+    {{- with $app.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  replicas: {{ $app.replicas }}
+  strategy:
+    type: {{ $app.updateStrategy.type }}
+    {{- if and (eq $app.updateStrategy.type "RollingUpdate") $app.updateStrategy.rollingUpdate }}
+    rollingUpdate:
+      {{- toYaml $app.updateStrategy.rollingUpdate | nindent 6 }}
+    {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Release.Name }}-gateway
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: {{ .Release.Name }}-gateway
+        {{- include "common.labels" . | nindent 8 }}
+        {{- with $app.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        checksum/luntry-config: '{{ include (print $.Template.BasePath "/03_config.yaml") . | sha256sum }}'
+        checksum/encryption-secret: '{{ include (print $.Template.BasePath "/17_gateway_tls.yaml") . | sha256sum }}'
+        {{- if .Values.monitoring.prometheusOperatorAnnotations.enabled }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: metrics
+        {{- end }}
+        {{- if $db.postgres.bankVaultsInjector.enabled }}
+        {{- toYaml $db.bankVaultsInjectorAnnotations | nindent 8 }}
+        {{- end }}
+        {{- if $app.annotations }}
+        {{- toYaml $app.annotations | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with $app.nodeSelector}}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if or $app.serviceAccount.create $app.serviceAccount.name }}
+      serviceAccountName: {{ quote (default (printf "%s-%s" .Release.Name "gateway") $app.serviceAccount.name) }}
+      {{- end }}
+      containers:
+        - name: gateway
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ $app.image.name }}:{{ $app.image.tag | default .Values.allTag }}"
+          imagePullPolicy: {{ $app.image.pullPolicy }}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" $app.securityContext "context" $) | nindent 12 }}
+          {{- if ne $app.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" $app.resourcesPreset) | nindent 12 }}
+          {{- else if ne .Values.globalResourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.globalResourcesPreset) | nindent 12 }}
+          {{- else }}
+          resources:
+            {{- toYaml $app.resources | nindent 12 }}
+          {{- end }}
+          readinessProbe:
+            httpGet:
+              port: probe
+              path: /ready
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          ports:
+            - name: grpc
+              containerPort: 43100
+            - name: probe
+              containerPort: 8080
+          env:
+            {{- range $app.additionalEnvs }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+            {{- include "postgres.hostPortDbSsl" . | nindent 12 }}
+            {{- include "postgres.envs" . | nindent 12 }}
+            {{- include "logFormat.envs" . | nindent 12 }}
+            - name: LOG_LEVEL
+              value: {{ $app.log.logLevel | quote }}
+            - name: PROM
+              value: {{ (or $app.prometheus.enabled .Values.monitoring.enabled) | quote }}
+            - name: PROF
+              value: {{ $app.profiling.enabled | quote }}
+            - name: CLUSTER_DESCRIPTION
+              value: {{ .Values.multicluster.clusterDescription | quote }}
+            - name: GRPC_ADDR
+              value: "0.0.0.0:43100"
+            - name: HTTP_ADDR
+              value: "0.0.0.0:8080"
+            - name: MAX_DB_CONN_COUNT
+              value: {{ $app.maxDbConnections | quote }}
+            - name: MEM_CACHE
+              value: {{ $app.cache.enabled | ternary "ON" "OFF" | quote }}
+            - name: WATCHER_ADDR
+              value: {{ include "watcherEndpoint" . | quote }}
+            - name: MANAGE_LICENSES
+              value: "true"
+            - name: GATEWAY_SSL_ENABLED
+              value: {{ $app.tls.enabled | quote }}
+            {{- if $app.tls.enabled }}
+            - name: GATEWAY_SSL_CERT_PATH
+              value: "/usr/share/ca-certificates/tls.crt"
+            - name: GATEWAY_SSL_KEY_PATH
+              value: "/usr/share/ca-certificates/tls.key"
+            {{- end }}
+          {{- if or $app.tls.enabled $db.postgres.tls.enabled }}
+          volumeMounts:
+            {{- include "pg.tls.volumeMount" . | nindent 12 }}
+            {{- if $app.tls.enabled }}
+            - name: gateway-tls
+              mountPath: /usr/share/ca-certificates/tls.crt
+              subPath: tls-crt
+            - name: gateway-tls
+              mountPath: /usr/share/ca-certificates/tls.key
+              subPath: tls-key
+            {{- end }}
+          {{- end }}
+      initContainers:
+        - name: migrator
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ .Values.migrator.image.name }}:{{ .Values.migrator.image.tag | default .Values.allTag }}"
+          imagePullPolicy: {{ .Values.migrator.image.pullPolicy }}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" .Values.migrator.securityContext "context" $) | nindent 12 }}
+          resources:
+            {{- toYaml .Values.migrator.resources | nindent 12 }}
+          env:
+            {{- include "postgres.hostPortDbSsl" . | nindent 12 }}
+            {{- include "postgres.envs" . | nindent 12 }}
+            - name: LICENSE_BASE64
+              value: {{ .Values.licenseKey | default "" }}
+            - name: DEBUG_MODE
+              value: {{ .Values.migrator.debug | quote }}
+            - name: PROCESS_MODULE_ENABLED
+              value: {{ .Values.policy.anomaliesEnabled.process | quote }}
+            - name: NETWORK_MODULE_ENABLED
+              value: {{ .Values.policy.anomaliesEnabled.network | quote }}
+            - name: FILE_MODULE_ENABLED
+              value: {{ .Values.policy.anomaliesEnabled.file | quote }}
+            - name: POLICY_AUTO_TRAINING
+              value: {{ .Values.policy.autoTraining | quote }}
+            - name: AUTO_TRAIN_ONLY_FULL_LIFECYCLE
+              value: {{ .Values.policy.onlyFullLifecycle | quote }}
+            - name: POLICY_TRAINING_TIME
+              value: {{ .Values.policy.trainingTime | quote }}
+            - name: POLICY_ARCHIVE_TIME
+              value: {{ .Values.policy.archiveTime | quote }}
+            - name: NOT_TRAINED_NAMESPACES
+              value: {{ print .Release.Namespace "," .Values.policy.excludedNamespaces | nospace | quote }}
+            - name: USER_IDLE_TIMEOUT
+              value: {{ .Values.admin.idleLogoutTimeout | quote }}
+            - name: RETENTION_QUERY_LIMIT
+              value: {{ .Values.retention.queryLimit | quote }}
+            - name: RETENTION_ANOMALY
+              value: {{ .Values.retention.defaultpolicy.anomaly | quote }}
+            - name: RETENTION_KUBERNETES_OBJECTS
+              value: {{ .Values.retention.defaultpolicy.kubernetesHistory | quote }}
+            - name: RETENTION_POLICY
+              value: {{ .Values.retention.defaultpolicy.policies | quote }}
+            - name: RETENTION_EVENTS
+              value: {{ .Values.retention.defaultpolicy.events | quote }}
+            - name: ANOMALY_OBSERVATION_RETENTION
+              value: {{ .Values.retention.defaultpolicy.anomalyObservation | quote }}
+            - name: RETENTION_RULE_DETECTS
+              value: {{ .Values.retention.defaultpolicy.ruleDetects | quote }}
+          {{- if $db.postgres.tls.enabled }}
+          volumeMounts:
+            {{- include "pg.tls.volumeMount" . | nindent 12 }}
+          {{- end }}
+      {{- if or $db.postgres.tls.enabled $app.tls.enabled }}
+      volumes:
+        {{- include "pg.tls.volume" . | nindent 8 }}
+        {{- if $app.tls.enabled }}
+        - name: gateway-tls
+          secret:
+            secretName: {{ $app.tls.crt.secretName | default (printf "%s-%s" .Release.Name "gateway-crt-key") }}
+            items:
+              - key: tls.crt
+                path: tls-crt
+              - key: tls.key
+                path: tls-key
+        {{- end }}
+      {{- end }}
+      {{- include "imagePullSecrets" . | nindent 6 }}
+
+{{- if and $app.enabled $app.pdb.enabled (.Capabilities.APIVersions.Has "policy/v1") }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}-gateway
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-gateway
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Release.Name }}-gateway
+      {{- include "common.labels" . | nindent 6 }}
+{{- end }}
+{{- end }}
+{{- end }}

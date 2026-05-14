@@ -1,0 +1,24 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-luntry-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: "luntry-config"
+    {{- include "common.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  #DB config
+  POSTGRES_HOST: {{ include "postgresHost" . | quote }}
+  POSTGRES_PORT: {{ include "postgresPort" . | toString | quote }}
+  POSTGRES_DB: {{ .Values.databaseConnectionConfiguration.postgres.dbName | default "collector" | quote }}
+  POSTGRES_SCHEMA: {{ .Values.databaseConnectionConfiguration.postgres.schemaName | default "public" | quote }}
+  POSTGRES_SSL_REQUIRED: {{ .Values.databaseConnectionConfiguration.postgres.tls.enabled | quote }}
+  POSTGRES_SSL_CERT_MOUNTPOINT: "/usr/share/ca-certificates/pg-ca.crt"
+  CLICKHOUSE_HOST: {{ include "clickHouseHost" . | quote }}
+  CLICKHOUSE_DB: {{ .Values.databaseConnectionConfiguration.clickhouse.dbName | default "luntry" | quote }}
+  CLICKHOUSE_TCP_PORT: {{ .Values.databaseConnectionConfiguration.clickhouse.portTCP | default "9000" | quote }}
+  CLICKHOUSE_HTTP_PORT: {{ .Values.databaseConnectionConfiguration.clickhouse.portHTTP | default "8123" | quote }}
+  REDIS_HOST: {{ include "redisHost" . | quote }}
+  KAFKA_ADDR: {{ include "kafkaHost" . | quote }}

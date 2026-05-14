@@ -1,0 +1,275 @@
+{{- $app := .Values.exporter -}}
+{{- if $app.enabled -}}
+{{- if or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main")) -}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-exporter
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-exporter
+    {{- include "common.labels" . | nindent 4 }}
+    {{- with $app.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  replicas: 1
+  strategy:
+    type: {{ $app.updateStrategy.type }}
+    {{- if and (eq $app.updateStrategy.type "RollingUpdate") $app.updateStrategy.rollingUpdate }}
+    rollingUpdate:
+      {{- toYaml $app.updateStrategy.rollingUpdate | nindent 6 }}
+    {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Release.Name }}-exporter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: {{ .Release.Name }}-exporter
+        {{- include "common.labels" . | nindent 8 }}
+        {{- with $app.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        checksum/luntry-config: '{{ include (print $.Template.BasePath "/03_config.yaml") . | sha256sum }}'
+        checksum/exporter-config: '{{ include (print $.Template.BasePath "/13_exporter_config.yaml") . | sha256sum }}'
+        checksum/exporter-tls: '{{ include (print $.Template.BasePath "/13_exporter_tls.yaml") . | sha256sum }}'
+        checksum/ca-bundle: '{{ include (print $.Template.BasePath "/14_image_scanner_ca_bundle.yaml") . | sha256sum }}'
+        {{- if .Values.monitoring.prometheusOperatorAnnotations.enabled }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: metrics
+        {{- end }}
+        {{- if or .Values.databaseConnectionConfiguration.postgres.bankVaultsInjector.enabled .Values.databaseConnectionConfiguration.clickhouse.bankVaultsInjector.enabled }}
+        {{- toYaml .Values.databaseConnectionConfiguration.bankVaultsInjectorAnnotations | nindent 8 }}
+        {{- end }}
+        {{- if $app.annotations }}
+        {{- toYaml $app.annotations | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with $app.nodeSelector}}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if $app.affinity }}
+      affinity:
+        {{- tpl (toYaml $app.affinity) . | nindent 8 }}
+      {{- end }}
+      {{- if or $app.serviceAccount.create $app.serviceAccount.name }}
+      serviceAccountName: {{ quote (default (printf "%s-%s" .Release.Name "exporter") $app.serviceAccount.name) }}
+      {{- end }}
+      containers:
+        - name: exporter
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ $app.image.name }}:{{ $app.image.tag  | default .Values.allTag }}"
+          imagePullPolicy: {{ $app.image.pullPolicy }}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" $app.securityContext "context" $) | nindent 12 }}
+          {{- if ne $app.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" $app.resourcesPreset) | nindent 12 }}
+          {{- else if ne .Values.globalResourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.globalResourcesPreset) | nindent 12 }}
+          {{- else }}
+          resources:
+            {{- toYaml $app.resources | nindent 12 }}
+          {{- end }}
+          command:
+            - "/exporter"
+            - "-c"
+            - "/etc/exporter/config.yaml"
+          ports:
+            - name: grpc
+              containerPort: 3337
+            - name: probe-port
+              containerPort: 8080
+          {{- if $app.probes.readiness.enabled }}
+          readinessProbe:
+            httpGet:
+              port: probe-port
+              path: /ready
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          {{- end }}
+          {{- if $app.probes.liveness.enabled }}
+          livenessProbe:
+            httpGet:
+              port: probe-port
+              path: /health
+            initialDelaySeconds: 180
+            periodSeconds: 60
+          {{- end }}
+          env:
+            {{- range $app.additionalEnvs }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+            {{- include "postgres.hostPortDbSsl" . | nindent 12 }}
+            {{- include "postgres.envs" . | nindent 12 }}
+            {{- include "clickhouse.HostDb" . | nindent 12 }}
+            {{- include "clickhouse.envs" . | nindent 12 }}
+            {{- include "logFormat.envs" . | nindent 12 }}
+            - name: CLICKHOUSE_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-luntry-config
+                  key: CLICKHOUSE_TCP_PORT
+            - name: LOG_LEVEL
+              value: {{ $app.log.logLevel | quote }}
+            - name: PROM
+              value: {{ (or $app.prometheus.enabled .Values.monitoring.enabled) | quote }}
+            - name: HTTP_ADDR
+              value: ":8080"
+            - name: EXPORTER_SOURCE
+              value: {{ .Values.multicluster.clusterName | quote }}
+            - name: EXPORTER_SSL_ENABLED
+              value: {{ $app.tls.enabled | quote }}
+            {{- if $app.tls.enabled }}
+            - name: EXPORTER_SSL_CERT_PATH
+              value: /etc/exporter/tls.crt
+            - name: EXPORTER_SSL_KEY_PATH
+              value: /etc/exporter/tls.key
+            {{- end }}
+            - name: COMMANDER_ADDR
+              value: "http://{{- include "commanderAddress" . -}}"
+            {{- if or .Values.caBundle.crtBase64 .Values.caBundle.secretName }}
+            - name: SSL_CERT_DIR
+              value: /usr/share/ca-certificates
+            {{- end }}
+            {{- if $app.export.mtls.enabled }}
+            - name: MUTUALTLSFILESPATH
+              value: {{ $app.export.mtls.mutualTlsFilesPath | default "/etc/certs/" | quote }}
+            {{- end }}
+            {{- if and $app.export.targets.syslog.host $app.export.targets.syslog.port }}
+            - name: SYSLOG_ADDRESS
+              value: {{ printf "%s:%s" $app.export.targets.syslog.host $app.export.targets.syslog.port | quote }}
+            - name: SYSLOG_PROTOCOL
+              value: {{ $app.export.targets.syslog.protocol | quote }}
+            - name: SYSLOG_SEVERITY
+              value: {{ $app.export.targets.syslog.severity | quote }}
+            - name: SYSLOG_REPORT_ONLY_NEW_ANOMALY
+              value: {{ $app.export.targets.syslog.reportOnlyNewAnomaly | quote }}
+            {{- end }}
+          volumeMounts:
+            {{- include "pg.tls.volumeMount" . | nindent 12 }}
+            {{- include "caBundle.volumeMount" . | nindent 12 }}
+            - name: exporter-config
+              mountPath: /etc/exporter
+            {{- if $app.export.mtls.enabled }}
+            - name: exporter-mtls-ca
+              mountPath: {{ $app.export.mtls.mutualTlsFilesPath }}/ca.crt
+              subPath: ca.crt
+            - name: exporter-mtls-crt
+              mountPath: {{ $app.export.mtls.mutualTlsFilesPath }}/client.crt
+              subPath: client.crt
+            - name: exporter-mtls-key
+              mountPath: {{ $app.export.mtls.mutualTlsFilesPath }}/client.key
+              subPath: client.key
+            {{- end }}
+      initContainers:
+        {{- if .Values.migratorClickhouse.enabled }}
+        - name: migrator-clickhouse
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ .Values.migratorClickhouse.image.name }}:{{ .Values.migratorClickhouse.image.tag | default .Values.allTag }}"
+          imagePullPolicy: {{ .Values.migratorClickhouse.image.pullPolicy }}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" .Values.migratorClickhouse.securityContext "context" $) | nindent 12 }}
+          resources:
+            {{- toYaml .Values.migratorClickhouse.resources | nindent 12 }}
+          env:
+            {{- include "clickhouse.HostDb" . | nindent 12 }}
+            {{- include "clickhouse.envs" . | nindent 12 }}
+            - name: CLICKHOUSE_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-luntry-config
+                  key: CLICKHOUSE_TCP_PORT
+            - name: REACTION_AUDIT_TTL_DAY
+              value: {{ .Values.retention.defaultpolicy.reactionAudit | quote }}
+            - name: AUDIT_LOG_DETECTS_TTL_DAY
+              value: {{ .Values.retention.defaultpolicy.auditLogDetects | quote }}
+        {{- end }}
+        {{- if .Values.dbwait.enabled }}
+        - name: db-wait
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ .Values.dbwait.image.name }}:{{ .Values.dbwait.image.tag  | default .Values.allTag }}"
+          imagePullPolicy: {{ .Values.dbwait.image.pullPolicy }}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" .Values.dbwait.securityContext "context" $) | nindent 12 }}
+          resources:
+            {{- toYaml .Values.dbwait.resources | nindent 12 }}
+          env:
+            {{- include "postgres.hostPortDbSsl" . | nindent 12 }}
+            {{- include "postgres.envs" . | nindent 12 }}
+            - name: OBSERVATION_STRATEGY
+              value: {{ .Values.develop.dbwait.observationStrategy.db.type | quote }}
+            - name: TABLES_RECV_METHOD
+              value: {{ .Values.develop.dbwait.observationStrategy.db.tablesRecvMethod | quote }}
+            - name: TABLES_LIST
+              value: {{ .Values.develop.dbwait.observationStrategy.db.tableList | quote }}
+            - name: BACKOFF_INTERVAL_SEC
+              value: {{ .Values.develop.dbwait.backoffIntervalSec | quote }}
+            - name: MAX_BACKOFFS
+              value: {{ .Values.develop.dbwait.maxBackoffs | quote }}
+            - name: DELAY_AFTER_ENDPOINT_AVAILABLE_SEC
+              value: {{ .Values.develop.dbwait.delay | quote }}
+          {{- if .Values.databaseConnectionConfiguration.postgres.tls.enabled }}
+          volumeMounts:
+            {{- include "pg.tls.volumeMount" . | nindent 12 }}
+          {{- end }}
+        {{- end }}
+      volumes:
+        {{- include "pg.tls.volume" . | nindent 8 }}
+        {{- include "caBundle.volume" . | nindent 8 }}
+        - name: exporter-config
+          projected:
+            sources:
+              - configMap:
+                  name: {{ .Release.Name }}-exporter-config
+              {{- if $app.tls.enabled }}
+              - secret:
+                  name: {{ $app.tls.crt.secretName | default (printf "%s-%s" .Release.Name "exporter-crt-key") }}
+              {{- end }}
+        {{- if $app.export.mtls.enabled }}
+        - name: exporter-mtls-key
+          secret:
+            secretName: {{ .Release.Name }}-exporter-mtls-crt-key
+            items:
+              - key: tls.key
+                path: client.key
+        - name: exporter-mtls-crt
+          secret:
+            secretName: {{ .Release.Name }}-exporter-mtls-crt-key
+            items:
+              - key: tls.crt
+                path: client.crt
+        - name: exporter-mtls-ca
+          secret:
+            secretName: {{ .Release.Name }}-exporter-mtls-ca
+            items:
+              - key: ca.crt
+                path: ca.crt
+        {{- end }}
+      {{- include "imagePullSecrets" . | nindent 6 }}
+
+{{- if and $app.pdb.enabled (.Capabilities.APIVersions.Has "policy/v1") }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}-exporter
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-exporter
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ $app.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Release.Name }}-exporter
+      app.kubernetes.io/part-of: {{ .Chart.Name }}
+{{- end }}
+{{- end }}
+{{- end }}

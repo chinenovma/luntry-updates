@@ -1,0 +1,25 @@
+{{- if and (.Values.linker.enabled) (or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main"))) }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-linker
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-linker
+    {{- include "common.labels" . | nindent 4 }}
+  {{- if .Values.linker.serviceAnnotations }}
+  annotations:
+    {{- toYaml .Values.linker.serviceAnnotations | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    app.kubernetes.io/component: {{ .Release.Name }}-linker
+  ports:
+    - protocol: TCP
+      port: 12346
+      name: netpol
+    - protocol: TCP
+      port: 12347
+      name: linker
+{{ end }}

@@ -1,0 +1,226 @@
+{{- $app := .Values.complianceOperator -}}
+{{- if $app.mode.workerNode -}}
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ .Release.Name }}-compliance-operator-node
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-compliance-operator-node
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Release.Name }}-compliance-operator-node
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: {{ .Release.Name }}-compliance-operator-node
+        {{- include "common.labels" . | nindent 8 }}
+      {{- if or .Values.monitoring.prometheusOperatorAnnotations.enabled (and .Values.databaseConnectionConfiguration.postgres.bankVaultsInjector.enabled (eq $app.driver "db")) $app.workerNode.annotations }}
+      annotations:
+        {{- if .Values.monitoring.prometheusOperatorAnnotations.enabled }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: metrics
+        {{- end }}
+        {{- if and .Values.databaseConnectionConfiguration.postgres.bankVaultsInjector.enabled (eq $app.driver "db") }}
+        {{- toYaml .Values.databaseConnectionConfiguration.bankVaultsInjectorAnnotations | nindent 8 }}
+        {{- end }}
+        {{- if $app.workerNode.annotations }}
+        {{- toYaml $app.workerNode.annotations | nindent 8 }}
+        {{- end }}
+      {{- end }}
+    spec:
+      hostPID: true
+      {{- with $app.workerNode.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.workerNode.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.workerNode.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if or $app.serviceAccount.create $app.serviceAccount.name }}
+      serviceAccountName: {{ quote (default (printf "%s-%s" .Release.Name "compliance") $app.serviceAccount.name) }}
+      {{- end }}
+      containers:
+        - name: compliance-operator-node
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ $app.image.name }}:{{ $app.image.tag  | default .Values.allTag }}"
+          imagePullPolicy: {{ $app.image.pullPolicy}}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" $app.securityContext "context" $) | nindent 12 }}
+          {{- if ne $app.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" $app.resourcesPreset) | nindent 12 }}
+          {{- else if ne .Values.globalResourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.globalResourcesPreset) | nindent 12 }}
+          {{- else }}
+          resources:
+            {{- toYaml $app.resources | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: metrics
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              port: metrics
+              path: /ready
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              port: metrics
+              path: /health
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          env:
+            {{- range $app.workerNode.additionalEnvs }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+            {{- include "logFormat.envs" . | nindent 12 }}
+            - name: HTTP_ADDR
+              value: ":8080"
+            - name: PROM
+              value: {{ (or $app.prometheus.enabled .Values.monitoring.enabled) | quote }}
+            - name: PROF
+              value: {{ $app.profiling.enabled | quote }}
+            - name: DRIVER
+              value: {{ $app.driver | quote }}
+            {{- if eq $app.driver "gateway" }}
+            - name: GATEWAY_SERVICE_ADDR
+              value: {{ include "gatewayEndpoint" . | quote }}
+            - name: GATEWAY_SSL_ENABLED
+              value: {{ .Values.gateway.tls.enabled | quote }}
+            - name: GATEWAY_SSL_CA_PATH
+              value: "/usr/share/ca-certificates/gateway-ca.crt"
+            {{- end }}
+            {{- if eq $app.driver "db" }}
+            {{- include "postgres.hostPortDbSsl" . | nindent 12 }}
+            {{- include "postgres.envs" . | nindent 12 }}
+            {{- end }}
+            - name: MAX_REPORTED_RESOURCES
+              value: {{ $app.maxReportedResources | quote }}
+            - name: CRON
+              value: {{ $app.cron | quote }}
+            - name: LOG_LEVEL
+              value: {{ $app.log.logLevel | quote }}
+            - name: BENCHMARK_ROLE
+              value: node
+            {{- if .Values.openShift.compatibility.complianceCisBenchmark }}
+            - name: BENCHMARK_NAME
+              value: "cis_openshift"
+            - name: BENCHMARK_VERSION
+              value: "1.0"
+            {{- else }}
+            - name: BENCHMARK_NAME
+              value: {{ $app.benchmark.name | quote }}
+            - name: BENCHMARK_VERSION
+              value: {{ $app.benchmark.version | quote }}
+            {{- end }}
+            - name: CLUSTER_NAME
+              value: {{ .Values.multicluster.clusterName | quote }}
+            - name: CONFIG_DIR
+              value: "/cfg"
+          volumeMounts:
+            {{- if eq $app.driver "gateway" }}
+            {{- include "gateway.tls.volumeMount" . | nindent 12 }}
+            {{- else }}
+            {{- include "pg.tls.volumeMount" . | nindent 12 }}
+            {{- end }}
+            - name: var-lib-etcd
+              mountPath: /var/lib/etcd
+              readOnly: true
+            - name: var-lib-kubelet
+              mountPath: /var/lib/kubelet
+              readOnly: true
+            - name: var-lib-kube-scheduler
+              mountPath: /var/lib/kube-scheduler
+              readOnly: true
+            - name: var-lib-kube-controller-manager
+              mountPath: /var/lib/kube-controller-manager
+              readOnly: true
+            - name: etc-systemd
+              mountPath: /etc/systemd
+              readOnly: true
+            - name: lib-systemd
+              mountPath: /lib/systemd/
+              readOnly: true
+            - name: srv-kubernetes
+              mountPath: /srv/kubernetes/
+              readOnly: true
+            - name: etc-kubernetes
+              mountPath: /etc/kubernetes
+              readOnly: true
+            - name: etc-cni-netd
+              mountPath: /etc/cni/net.d/
+              readOnly: true
+            {{- if not .Values.openShift.compatibility.complianceCisBenchmark }}
+            - name: opt-cni-bin
+              mountPath: /opt/cni/bin/
+              readOnly: true
+            {{- end }}
+      {{- if .Values.dbwait.enabled }}
+      initContainers:
+        - name: db-wait
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ .Values.dbwait.image.name }}:{{ .Values.dbwait.image.tag  | default .Values.allTag }}"
+          imagePullPolicy: {{ .Values.dbwait.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.dbwait.resources | nindent 12 }}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" .Values.dbwait.securityContext "context" $) | nindent 12 }}
+          env:
+            - name: OBSERVATION_STRATEGY
+              value: {{ .Values.develop.dbwait.observationStrategy.watcher.type | quote }}
+            - name: AWAIT_ENDPOINT
+              value: {{ include "watcherAwaitEndpoint" . | quote }}
+            - name: BACKOFF_INTERVAL_SEC
+              value: {{ .Values.develop.dbwait.backoffIntervalSec | quote }}
+            - name: MAX_BACKOFFS
+              value: {{ .Values.develop.dbwait.maxBackoffs | quote }}
+      {{- end }}
+      volumes:
+        {{- if eq $app.driver "gateway" }}
+        {{- include "gateway.tls.volume" . | nindent 8 }}
+        {{- else }}
+        {{- include "pg.tls.volume" . | nindent 8 }}
+        {{- end }}
+        - name: var-lib-etcd
+          hostPath:
+            path: "/var/lib/etcd"
+        - name: var-lib-kubelet
+          hostPath:
+            path: "/var/lib/kubelet"
+        - name: var-lib-kube-scheduler
+          hostPath:
+            path: "/var/lib/kube-scheduler"
+        - name: var-lib-kube-controller-manager
+          hostPath:
+            path: "/var/lib/kube-controller-manager"
+        - name: etc-systemd
+          hostPath:
+            path: "/etc/systemd"
+        - name: lib-systemd
+          hostPath:
+            path: "/lib/systemd"
+        - name: srv-kubernetes
+          hostPath:
+            path: "/srv/kubernetes"
+        - name: etc-kubernetes
+          hostPath:
+            path: "/etc/kubernetes"
+        - name: etc-cni-netd
+          hostPath:
+            path: "/etc/cni/net.d/"
+        {{- if not .Values.openShift.compatibility.complianceCisBenchmark }}
+        - name: opt-cni-bin
+          hostPath:
+            path: "/opt/cni/bin/"
+        {{- end }}
+      {{- include "imagePullSecrets" . | nindent 6 }}
+{{- end }}

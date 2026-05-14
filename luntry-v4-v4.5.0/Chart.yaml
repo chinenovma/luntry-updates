@@ -1,0 +1,17 @@
+apiVersion: v2
+appVersion: v4.5
+description: A Helm chart for the Luntry
+home: https://luntry.ru/
+icon: https://luntry.ru/wp-content/themes/luntry-theme/assets/images/logotype.svg
+keywords:
+- security
+- syscalls
+- monitoring
+- alerting
+kubeVersion: '>=1.16.0-0'
+maintainers:
+- email: root@luntry.ru
+  name: The Luntry Company
+name: luntry-v4
+type: application
+version: v4.5.0

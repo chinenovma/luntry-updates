@@ -1,0 +1,14 @@
+{{- if and .Values.databaseConnectionConfiguration.redis.password (not .Values.databaseConnectionConfiguration.redis.customSecret.secretName) (not .Values.databaseConnectionConfiguration.redis.bankVaultsInjector.enabled) -}}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-redis-auth
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-redis-auth
+    {{- include "common.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  REDIS_PASSWORD: {{ .Values.databaseConnectionConfiguration.redis.password | quote }}
+{{- end }}

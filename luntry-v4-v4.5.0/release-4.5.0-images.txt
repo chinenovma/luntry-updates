@@ -1,0 +1,25 @@
+Образы релиза 4.5.0
+registry.luntry.com/luntry/3dparty/clickhouse-server:25.9
+registry.luntry.com/luntry/3dparty/kafka:3.8.1
+registry.luntry.com/luntry/3dparty/valkey:9.0.3
+registry.luntry.com/luntry/audit-log-analyzer:v4.5
+registry.luntry.com/luntry/charon:v4.5
+registry.luntry.com/luntry/checker:v4.5
+registry.luntry.com/luntry/cmd-agent:v4.5
+registry.luntry.com/luntry/cmd-dispatcher:v4.5
+registry.luntry.com/luntry/compliance-operator:v4.5
+registry.luntry.com/luntry/data-provider:v4.5
+registry.luntry.com/luntry/db-wait:v4.5
+registry.luntry.com/luntry/exporter:v4.5
+registry.luntry.com/luntry/gateway:v4.5
+registry.luntry.com/luntry/gcollector:v4.5
+registry.luntry.com/luntry/image-scanner:v4.5
+registry.luntry.com/luntry/lapi:v4.5
+registry.luntry.com/luntry/migrator-clickhouse:v4.5
+registry.luntry.com/luntry/migrator:v4.5
+registry.luntry.com/luntry/networker:v4.5
+registry.luntry.com/luntry/policier:v4.5
+registry.luntry.com/luntry/retention:v4.5
+registry.luntry.com/luntry/sensor-rs:v4.5
+registry.luntry.com/luntry/visualizer:v4.5
+registry.luntry.com/luntry/watcher:v4.5

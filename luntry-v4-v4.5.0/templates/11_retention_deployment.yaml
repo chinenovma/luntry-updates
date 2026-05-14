@@ -1,0 +1,162 @@
+{{- $app := .Values.retention -}}
+{{- if $app.enabled -}}
+{{- if or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main")) -}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-retention
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-retention
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: {{ $app.updateStrategy.type }}
+    {{- if and (eq $app.updateStrategy.type "RollingUpdate") $app.updateStrategy.rollingUpdate }}
+    rollingUpdate:
+      {{- toYaml $app.updateStrategy.rollingUpdate | nindent 6 }}
+    {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Release.Name }}-retention
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: {{ .Release.Name }}-retention
+        {{- include "common.labels" . | nindent 8 }}
+      annotations:
+        checksum/luntry-config: '{{ include (print $.Template.BasePath "/03_config.yaml") . | sha256sum }}'
+        {{- if .Values.monitoring.prometheusOperatorAnnotations.enabled }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: metrics
+        {{- end }}
+        {{- if .Values.databaseConnectionConfiguration.postgres.bankVaultsInjector.enabled }}
+        {{- toYaml .Values.databaseConnectionConfiguration.bankVaultsInjectorAnnotations | nindent 8 }}
+        {{- end }}
+        {{- if $app.annotations }}
+        {{- toYaml $app.annotations | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with $app.nodeSelector}}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if or $app.serviceAccount.create $app.serviceAccount.name }}
+      serviceAccountName: {{ quote (default (printf "%s-%s" .Release.Name "retention") $app.serviceAccount.name) }}
+      {{- end }}
+      containers:
+        - name: retention
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ $app.image.name }}:{{ $app.image.tag  | default .Values.allTag }}"
+          imagePullPolicy: {{ $app.image.pullPolicy }}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" $app.securityContext "context" $) | nindent 12 }}
+          {{- if ne $app.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" $app.resourcesPreset) | nindent 12 }}
+          {{- else if ne .Values.globalResourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.globalResourcesPreset) | nindent 12 }}
+          {{- else }}
+          resources:
+            {{- toYaml $app.resources | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: 8080
+              name: probe-port
+          readinessProbe:
+            httpGet:
+              port: probe-port
+              path: /ready
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              port: probe-port
+              path: /health
+            initialDelaySeconds: 300
+            periodSeconds: 20
+          env:
+            {{- range $app.additionalEnvs }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+            {{- include "postgres.hostPortDbSsl" . | nindent 12 }}
+            {{- include "postgres.envs" . | nindent 12 }}
+            {{- include "logFormat.envs" . | nindent 12 }}
+            - name: CRON
+              value: {{ $app.runSchedule | quote }}
+            - name: RETENTION_QUERY_LIMIT
+              value: {{ $app.queryLimit | quote }}
+            - name: HTTP_ADDR
+              value: ":8080"
+            - name: PROF
+              value: {{ $app.profiling.enabled | quote }}
+            - name: PROM
+              value: {{ (or $app.prometheus.enabled .Values.monitoring.enabled) | quote }}
+          {{- if .Values.databaseConnectionConfiguration.postgres.tls.enabled }}
+          volumeMounts:
+            {{- include "pg.tls.volumeMount" . | nindent 12 }}
+          {{- end }}
+      {{- if .Values.dbwait.enabled }}
+      initContainers:
+        - name: db-wait
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ .Values.dbwait.image.name }}:{{ .Values.dbwait.image.tag  | default .Values.allTag }}"
+          imagePullPolicy: {{ .Values.dbwait.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.dbwait.resources | nindent 12 }}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" .Values.dbwait.securityContext "context" $) | nindent 12 }}
+          env:
+            {{- include "postgres.hostPortDbSsl" . | nindent 12 }}
+            {{- include "postgres.envs" . | nindent 12 }}
+            - name: OBSERVATION_STRATEGY
+              value: {{ .Values.develop.dbwait.observationStrategy.db.type | quote }}
+            - name: TABLES_RECV_METHOD
+              value: {{ .Values.develop.dbwait.observationStrategy.db.tablesRecvMethod | quote }}
+            - name: TABLES_LIST
+              value: {{ .Values.develop.dbwait.observationStrategy.db.tableList | quote }}
+            - name: BACKOFF_INTERVAL_SEC
+              value: {{ .Values.develop.dbwait.backoffIntervalSec | quote }}
+            - name: MAX_BACKOFFS
+              value: {{ .Values.develop.dbwait.maxBackoffs | quote }}
+            - name: DELAY_AFTER_ENDPOINT_AVAILABLE_SEC
+              value: {{ .Values.develop.dbwait.delay | quote }}
+          {{- if .Values.databaseConnectionConfiguration.postgres.tls.enabled }}
+          volumeMounts:
+            {{- include "pg.tls.volumeMount" . | nindent 12 }}
+          {{- end -}}
+      {{- end -}}
+      {{- if .Values.databaseConnectionConfiguration.postgres.tls.enabled }}
+      volumes:
+        {{- include "pg.tls.volume" . | nindent 8 }}
+      {{- end }}
+      {{- include "imagePullSecrets" . | nindent 6 }}
+
+{{- if and $app.pdb.enabled (.Capabilities.APIVersions.Has "policy/v1") }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}-retention
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-retention
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ $app.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Release.Name }}-retention
+      app.kubernetes.io/part-of: {{ .Chart.Name }}
+{{- end }}
+{{- end }}
+{{- end }}

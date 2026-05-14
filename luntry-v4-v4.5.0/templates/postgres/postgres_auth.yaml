@@ -1,0 +1,15 @@
+{{- if or .Values.postgres.enabled (and (not .Values.databaseConnectionConfiguration.postgres.customSecret.secretName) (not .Values.databaseConnectionConfiguration.postgres.bankVaultsInjector.enabled) (not (eq .Values.multicluster.role "secondary"))) }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-postgres-auth
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-postgres
+    {{- include "common.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  POSTGRES_USER: {{ .Values.databaseConnectionConfiguration.postgres.username | default "collector" | quote }}
+  POSTGRES_PASSWORD: {{ .Values.databaseConnectionConfiguration.postgres.password | default "123QWEasd" | quote }}
+{{- end }}

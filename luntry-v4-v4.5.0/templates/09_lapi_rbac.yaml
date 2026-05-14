@@ -1,0 +1,11 @@
+{{- if and (.Values.lapi.enabled) (.Values.lapi.serviceAccount.create) -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ quote (default (printf "%s-%s" .Release.Name "lapi") .Values.lapi.serviceAccount.name) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-lapi
+    {{- include "common.labels" . | nindent 4 }}
+{{- end }}

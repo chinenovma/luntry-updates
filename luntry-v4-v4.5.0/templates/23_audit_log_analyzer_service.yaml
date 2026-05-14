@@ -1,0 +1,30 @@
+{{- if .Values.auditLogAnalyzer.enabled -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-audit-log-analyzer
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-audit-log-analyzer
+    {{- include "common.labels" . | nindent 4 }}
+  {{- if .Values.auditLogAnalyzer.serviceAnnotations }}
+  annotations:
+    {{- toYaml .Values.auditLogAnalyzer.serviceAnnotations | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    app.kubernetes.io/component: {{ .Release.Name }}-audit-log-analyzer
+  {{- if and (or (eq .Values.auditLogAnalyzer.service.type "ClusterIP") (eq .Values.auditLogAnalyzer.service.type "NodePort")) .Values.auditLogAnalyzer.service.clusterIP }}
+  clusterIP: {{ .Values.auditLogAnalyzer.service.clusterIP }}
+  {{- end }}
+  type: {{ .Values.auditLogAnalyzer.service.type }}
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8081
+      targetPort: webhook
+      {{- if and (eq .Values.auditLogAnalyzer.service.type "NodePort") .Values.auditLogAnalyzer.service.nodePort }}
+      nodePort: {{ .Values.auditLogAnalyzer.service.nodePort }}
+      {{- end }}
+{{- end }}

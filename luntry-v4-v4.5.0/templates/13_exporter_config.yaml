@@ -1,0 +1,13 @@
+{{- if .Values.exporter.enabled -}}
+{{- if or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main")) -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-exporter-config
+  namespace: {{ .Release.Namespace }}
+data:
+  config.yaml: |
+    {{- toYaml .Values.exporter.export.targets | nindent 4}}
+{{- end }}
+{{- end }}

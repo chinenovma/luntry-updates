@@ -1,0 +1,27 @@
+{{- if .Values.vulndb.enabled -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-vulndb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-vulndb
+    {{- include "common.labels" . | nindent 4 }}
+  {{- if .Values.vulndb.serviceAnnotations }}
+  annotations:
+    {{- toYaml .Values.vulndb.serviceAnnotations | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    app.kubernetes.io/component: {{ .Release.Name }}-vulndb
+  type: {{ .Values.vulndb.service.type }}
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+      {{- if .Values.vulndb.service.nodePort }}
+      nodePort: {{ .Values.vulndb.service.nodePort }}
+      {{- end }}
+{{- end }}

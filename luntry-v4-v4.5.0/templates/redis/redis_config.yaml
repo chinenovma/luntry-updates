@@ -1,0 +1,23 @@
+{{- if .Values.redis.enabled -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-redis-configuration
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-redis-configuration
+    {{- include "common.labels" . | nindent 4 }}
+data:
+  redis.conf: |-
+    # Enable AOF https://valkey.io/topics/persistence#append-only-file
+    appendonly yes
+    # Disable RDB persistence, AOF persistence already enabled.
+    save ""
+    dir /data
+    #
+    protected-mode no
+    loglevel notice
+    log-format logfmt
+    log-timestamp-format iso8601
+{{- end }}

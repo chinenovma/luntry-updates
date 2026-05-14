@@ -1,0 +1,20 @@
+{{- if .Values.lapi.enabled }}
+{{- if or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main")) }}
+{{- if (and .Values.lapi.tls.enabled .Values.lapi.tls.crt.crtBase64 .Values.lapi.tls.crt.keyBase64) }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-lapi-crt-key
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-lapi
+    {{- include "common.labels" . | nindent 4 }}
+data:
+#Cert and key have to be base64 encoded
+  tls.crt: {{ .Values.lapi.tls.crt.crtBase64 }}
+  tls.key: {{ .Values.lapi.tls.crt.keyBase64 }}
+type: kubernetes.io/tls
+{{- end }}
+{{- end }}
+{{- end }}

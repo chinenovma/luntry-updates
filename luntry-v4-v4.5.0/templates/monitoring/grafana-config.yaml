@@ -1,0 +1,51 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.grafana.enabled -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-grafana-config
+  namespace: {{ .Release.Namespace }}
+data:
+  grafana.ini: |
+    [paths]
+    data = /data/grafana
+    provisioning = provisioning
+    [server]
+    protocol = http
+    http_addr = 0.0.0.0
+    http_port = 3000
+    [auth.anonymous]
+    enabled = true
+    org_name = Main Org.
+    org_role = Viewer
+    hide_version = true
+    [security]
+    admin_user = {{ .Values.admin.user }}
+    admin_password = {{ .Values.admin.password }}
+    [database]
+    wal = true
+    [analytics]
+    reporting_enabled = false
+    check_for_updates = false
+    check_for_plugin_updates = false
+  prometheus.yaml: |
+    apiVersion: 1
+    datasources:
+    - name: Prometheus
+      type: prometheus
+      access: proxy
+      url: http://{{ .Release.Name }}-prometheus.{{ .Release.Namespace }}:9090
+      isDefault: true
+      version: 1
+      editable: false
+      basicAuth: false
+  dashboard.yaml: |
+    apiVersion: 1
+    providers:
+      - name: dashboards
+        type: file
+        updateIntervalSeconds: 30
+        options:
+          path: /etc/grafana/dashboards
+          foldersFromFilesStructure: true
+{{- end -}}

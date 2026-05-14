@@ -1,0 +1,20 @@
+{{- if and .Values.collector.enabled ( or .Values.monitoring.enabled .Values.collector.prometheus.enabled ) .Values.monitoring.victoriaMetricsScrapeCR.enabled }}
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: "collector"
+  namespace: {{ .Release.Namespace }}
+spec:
+  endpoints:
+    - interval: 60s
+      path: /metrics
+      scrapeTimeout: 30s
+      targetPort: 8080
+  jobLabel: "app.kubernetes.io/component"
+  namespaceSelector:
+    matchNames: [{{ .Release.Namespace | quote }}]
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Release.Name }}-collector
+{{- end }}

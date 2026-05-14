@@ -1,0 +1,164 @@
+{{- $app := .Values.lapi -}}
+{{- if $app.enabled -}}
+{{- if or (not .Values.multicluster.enabled) (and (.Values.multicluster.enabled) (eq .Values.multicluster.role "main")) -}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-lapi
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-lapi
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: {{ $app.updateStrategy.type }}
+    {{- if and (eq $app.updateStrategy.type "RollingUpdate") $app.updateStrategy.rollingUpdate }}
+    rollingUpdate:
+      {{- toYaml $app.updateStrategy.rollingUpdate | nindent 6 }}
+    {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Release.Name }}-lapi
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: {{ .Release.Name }}-lapi
+        {{- include "common.labels" . | nindent 8 }}
+      annotations:
+        checksum/luntry-config: '{{ include (print $.Template.BasePath "/03_config.yaml") . | sha256sum }}'
+        checksum/exporter-tls: '{{ include (print $.Template.BasePath "/13_exporter_tls.yaml") . | sha256sum }}'
+        checksum/lapi-tls: '{{ include (print $.Template.BasePath "/09_lapi_tls.yaml") . | sha256sum }}'
+        {{- if .Values.monitoring.prometheusOperatorAnnotations.enabled }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: metrics
+        {{- end }}
+        {{- if or .Values.databaseConnectionConfiguration.postgres.bankVaultsInjector.enabled .Values.databaseConnectionConfiguration.redis.bankVaultsInjector.enabled }}
+        {{- toYaml .Values.databaseConnectionConfiguration.bankVaultsInjectorAnnotations | nindent 8 }}
+        {{- end }}
+        {{- if $app.annotations }}
+        {{- toYaml $app.annotations | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with $app.nodeSelector}}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $app.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if or $app.serviceAccount.create $app.serviceAccount.name }}
+      serviceAccountName: {{ quote (default (printf "%s-%s" .Release.Name "lapi") $app.serviceAccount.name) }}
+      {{- end }}
+      {{- include "imagePullSecrets" . | nindent 6 }}
+      containers:
+        - name: lapi
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ $app.image.name }}:{{ $app.image.tag  | default .Values.allTag }}"
+          imagePullPolicy: {{ $app.image.pullPolicy }}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" $app.securityContext "context" $) | nindent 12 }}
+          {{- if ne $app.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" $app.resourcesPreset) | nindent 12 }}
+          {{- else if ne .Values.globalResourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.globalResourcesPreset) | nindent 12 }}
+          {{- else }}
+          resources:
+            {{- toYaml $app.resources | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: grpc
+              containerPort: 43100
+            - name: probe-port
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              port: probe-port
+              path: /ready
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              port: probe-port
+              path: /health
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          env:
+            {{- range $app.additionalEnvs }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+            {{- include "postgres.hostPortDbSsl" . | nindent 12 }}
+            {{- include "postgres.envs" . | nindent 12 }}
+            {{- include "redis.pass" . | nindent 12 }}
+            {{- include "logFormat.envs" . | nindent 12 }}
+            - name: LOG_LEVEL
+              value: {{ $app.log.logLevel | quote }}
+            - name: PROM
+              value: {{ (or $app.prometheus.enabled .Values.monitoring.enabled) | quote }}
+            - name: PROF
+              value: {{ $app.profiling.enabled | quote }}
+            - name: GRPC_ADDR
+              value: "0.0.0.0:43100"
+            - name: HTTP_ADDR
+              value: "0.0.0.0:8080"
+            - name: LAPI_SSL_ENABLED
+              value: {{ $app.tls.enabled | quote }}
+            {{- if $app.tls.enabled }}
+            - name: LAPI_SSL_CERT_PATH
+              value: /etc/lapi/tls.crt
+            - name: LAPI_SSL_KEY_PATH
+              value: /etc/lapi/tls.key
+            {{- end }}
+            - name: EXPORTER_SERVICE_ADDR
+              value: {{ include "exporterHost" . | quote }}
+            - name: EXPORTER_SSL_ENABLED
+              value: {{ .Values.exporter.tls.enabled | quote }}
+            {{- if .Values.exporter.tls.enabled }}
+            - name: EXPORTER_SSL_CA_PATH
+              value: "/usr/share/ca-certificates/exporter-ca.crt"
+            {{- end }}
+            - name: WATCHER_ADDR
+              value: {{ include "watcherEndpoint" . | quote }}
+            - name: REDIS_ADDR
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-luntry-config
+                  key: REDIS_HOST
+          {{- if or .Values.databaseConnectionConfiguration.postgres.tls.enabled .Values.exporter.tls.enabled }}
+          volumeMounts:
+            {{- include "pg.tls.volumeMount" . | nindent 12 }}
+            {{- include "exporter.tls.volumeMount" . | nindent 12 }}
+          {{- end }}
+      {{- if .Values.dbwait.enabled }}
+      initContainers:
+        - name: db-wait
+          image: "{{ .Values.imageCredentials.registry }}/{{ .Values.imageCredentials.repository }}/{{ .Values.dbwait.image.name }}:{{ .Values.dbwait.image.tag  | default .Values.allTag }}"
+          imagePullPolicy: {{ .Values.dbwait.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.dbwait.resources | nindent 12 }}
+          securityContext:
+            {{- include "renderSecurityContext" (dict "secContext" .Values.dbwait.securityContext "context" $) | nindent 12 }}
+          env:
+            - name: OBSERVATION_STRATEGY
+              value: {{ .Values.develop.dbwait.observationStrategy.lapi.type | quote }}
+            - name: AWAIT_ENDPOINT
+              value: {{ include "watcherAwaitEndpoint" . | quote }}
+            - name: BACKOFF_INTERVAL_SEC
+              value: {{ .Values.develop.dbwait.backoffIntervalSec | quote }}
+            - name: MAX_BACKOFFS
+              value: {{ .Values.develop.dbwait.maxBackoffs | quote }}
+      {{- end }}
+      {{- if or .Values.databaseConnectionConfiguration.postgres.tls.enabled .Values.exporter.tls.enabled }}
+      volumes:
+        {{- include "pg.tls.volume" . | nindent 8 }}
+        {{- include "exporter.tls.volume" . | nindent 8 }}
+      {{- end }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,17 @@
+{{- if and (.Values.sensor.enabled) (eq .Values.sensor.reactions.remote.rsync.pvc.type "pvc") -}}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-sensor-rsync
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Release.Name }}-sensor-rsync
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  storageClassName: {{ .Values.sensor.reactions.remote.rsync.pvc.storageClass | quote }}
+  accessModes: ["ReadWriteMany"]
+  resources:
+    requests:
+      storage: {{ .Values.sensor.reactions.remote.rsync.pvc.size }}
+{{- end }}
