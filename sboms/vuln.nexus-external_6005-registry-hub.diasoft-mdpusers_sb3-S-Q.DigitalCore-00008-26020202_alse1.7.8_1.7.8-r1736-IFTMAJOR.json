@@ -1,0 +1,2462 @@
+{
+  "ImageID": "nexus-external:6005/registry-hub.diasoft/mdpusers@sha256:28e3f20a737f8423baa91fb3e5ce538ebfc9d79cffabb1f00de7bb82e5bba2e9",
+  "Tags": [
+    "sb3-S-Q.DigitalCore-00008-26020202_alse1.7.8_1.7.8-r1736-IFTMAJOR"
+  ],
+  "Vulnerabilities": [
+    {
+      "ID": "GHSA-4cx2-fc23-5wg6",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "bcpkix-jdk18on",
+      "Installed": "1.76",
+      "FixedIn": [
+        "1.79"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-4cx2-fc23-5wg6"
+      ],
+      "CVSS": [],
+      "Description": "Bouncy Castle for Java bcpkix, bcprov, bcpkix-fips on All (API modules) allows Excessive Allocation",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.34554,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-cgwf-w82q-5jrr",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "commons-compress",
+      "Installed": "1.22",
+      "FixedIn": [
+        "1.24.0"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-cgwf-w82q-5jrr"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H"
+      ],
+      "Description": "Apache Commons Compress denial of service vulnerability",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.38524,
+      "KEV": false,
+      "RCE": false,
+      "DOS": true,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-hvcg-qmg6-jm4c",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "netty-codec-http",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.135.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-hvcg-qmg6-jm4c"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+      ],
+      "Description": "Netty: HttpObjectDecoder skips arbitrary initial control characters when only initial CRLF characters are permitted",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.1403,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-mgp5-rv84-w37q",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "tomcat-embed-core",
+      "Installed": "10.1.44",
+      "FixedIn": [
+        "10.1.52"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-mgp5-rv84-w37q"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+      ],
+      "Description": "Apache Tomcat has an Improper Input Validation vulnerability",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.39008,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-wg6q-6289-32hp",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "bcpkix-jdk18on",
+      "Installed": "1.76",
+      "FixedIn": [
+        "1.84"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-wg6q-6289-32hp"
+      ],
+      "CVSS": [],
+      "Description": "Bouncy Castle Crypto Package For Java: Use of a Broken or Risky Cryptographic Algorithm vulnerability in bcpkix modules",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.31135,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-m494-w24q-6f7w",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "mssql-jdbc",
+      "Installed": "12.6.4",
+      "FixedIn": [
+        "12.6.5.jre11"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-m494-w24q-6f7w"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N"
+      ],
+      "Description": "JDBC Driver for SQL Server has improper input validation issue",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.47469,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-57rv-r2g8-2cj3",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "netty-codec-http",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.133.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-57rv-r2g8-2cj3"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:L"
+      ],
+      "Description": "Netty has HttpClientCodec response desynchronization",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.45902,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-f6hv-jmp6-3vwv",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "netty-codec-http2",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.133.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-f6hv-jmp6-3vwv"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      ],
+      "Description": "Netty: HttpContentDecompressor maxAllocation bypass when Content-Encoding set to br/zstd/snappy leads to decompression bomb DoS",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.50383,
+      "KEV": false,
+      "RCE": false,
+      "DOS": true,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-5pvg-856g-cp85",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "netty-resolver-dns",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.135.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-5pvg-856g-cp85"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:N"
+      ],
+      "Description": "Netty has Insufficient Bailiwick Validation for NS Records",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.20273,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-r936-gwx5-v52f",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "spring-webmvc",
+      "Installed": "6.1.19",
+      "FixedIn": [],
+      "FixState": "not-fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-r936-gwx5-v52f"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N"
+      ],
+      "Description": "Spring Framework MVC Applications Path Traversal Vulnerability",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.7737,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-5mp6-jrq3-r938",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "tomcat-embed-core",
+      "Installed": "10.1.44",
+      "FixedIn": [
+        "10.1.55"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-5mp6-jrq3-r938"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+      ],
+      "Description": "Apache Tomcat: LockOutRealm treats user names as case-sensitive",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.37143,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-vgq5-3255-v292",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "kafka-clients",
+      "Installed": "3.7.2",
+      "FixedIn": [
+        "3.9.1"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-vgq5-3255-v292"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+      ],
+      "Description": "Apache Kafka Client Arbitrary File Read and Server Side Request Forgery Vulnerability",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.9908,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-4q2v-9p7v-3v22",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "reactor-netty-http",
+      "Installed": "1.1.29",
+      "FixedIn": [
+        "1.2.8"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-4q2v-9p7v-3v22"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+      ],
+      "Description": "Reactor Netty HTTP is vulnerable to credential leaks during chained redirects",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.25966,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-vxf7-qj7q-83fh",
+      "Namespace": "github:language:java",
+      "Severity": "Low",
+      "Type": "java-archive",
+      "Package": "spring-security-core",
+      "Installed": "6.3.9",
+      "FixedIn": [],
+      "FixState": "not-fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-vxf7-qj7q-83fh"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N"
+      ],
+      "Description": "Spring Security Vulnerable to User Attribute Enumeration when Using DaoAuthenticationProvider",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.11874,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-vfww-5hm6-hx2j",
+      "Namespace": "github:language:java",
+      "Severity": "Low",
+      "Type": "java-archive",
+      "Package": "tomcat-embed-core",
+      "Installed": "10.1.44",
+      "FixedIn": [
+        "10.1.45"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-vfww-5hm6-hx2j"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:H"
+      ],
+      "Description": "Apache Tomcat Vulnerable to Improper Neutralization of Escape, Meta, or Control Sequences",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.95007,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-c653-97m9-rcg9",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "netty-handler",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.135.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-c653-97m9-rcg9"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+      ],
+      "Description": "Netty: Wrapping plain trust manager silently disables hostname verification",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.18512,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-cm33-6792-r9fm",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "netty-codec-dns",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.133.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-cm33-6792-r9fm"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+      ],
+      "Description": "Netty has a DNS Codec Input Validation Bypass (Encoder + Decoder)",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.5268,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-hgj6-7826-r7m5",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "jackson-databind",
+      "Installed": "2.17.3",
+      "FixedIn": [
+        "2.18.8"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-hgj6-7826-r7m5"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+      ],
+      "Description": "jackson-databind: InetSocketAddress deserialization triggers eager DNS resolution (SSRF)",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.12316,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-wf66-mphr-4c4r",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "kafka-clients",
+      "Installed": "3.7.2",
+      "FixedIn": [
+        "3.9.2"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-wf66-mphr-4c4r"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+      ],
+      "Description": "Apache Kafka exposes sensitive information in its DEBUG logs",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.41198,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-6hg6-v5c8-fphq",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "log4j-core",
+      "Installed": "2.24.3",
+      "FixedIn": [
+        "2.25.4"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-6hg6-v5c8-fphq"
+      ],
+      "CVSS": [],
+      "Description": "Apache Log4j Core: `verifyHostName` attribute silently ignored in TLS configuration",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.31531,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-hgrr-935x-pq79",
+      "Namespace": "github:language:java",
+      "Severity": "Low",
+      "Type": "java-archive",
+      "Package": "tomcat-embed-core",
+      "Installed": "10.1.44",
+      "FixedIn": [
+        "10.1.47"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-hgrr-935x-pq79"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:N/A:H"
+      ],
+      "Description": "Apache Tomcat Vulnerable to Improper Resource Shutdown or Release",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.62702,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-r29c-68gh-xp6x",
+      "Namespace": "github:language:java",
+      "Severity": "Critical",
+      "Type": "java-archive",
+      "Package": "tomcat-embed-core",
+      "Installed": "10.1.44",
+      "FixedIn": [
+        "10.1.55"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-r29c-68gh-xp6x"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+      ],
+      "Description": "Apache Tomcat - HTTP/2 request headers not validated",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.67856,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-c3fc-8qff-9hwx",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "bcprov-jdk18on",
+      "Installed": "1.80",
+      "FixedIn": [
+        "1.84"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-c3fc-8qff-9hwx"
+      ],
+      "CVSS": [],
+      "Description": "Bouncy Castle has an LDAP injection",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.4074,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-4265-ccf5-phj5",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "commons-compress",
+      "Installed": "1.22",
+      "FixedIn": [
+        "1.26.0"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-4265-ccf5-phj5"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H"
+      ],
+      "Description": "Apache Commons Compress: OutOfMemoryError unpacking broken Pack200 file",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.55208,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-j288-q9x7-2f5v",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "commons-lang",
+      "Installed": "2.6",
+      "FixedIn": [],
+      "FixState": "not-fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-j288-q9x7-2f5v"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+      ],
+      "Description": "Apache Commons Lang is vulnerable to Uncontrolled Recursion when processing long inputs",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.80016,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-72hv-8253-57qq",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "jackson-core",
+      "Installed": "2.17.3",
+      "FixedIn": [
+        "2.18.6"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-72hv-8253-57qq"
+      ],
+      "CVSS": [],
+      "Description": "jackson-core: Number Length Constraint Bypass in Async Parser Leads to Potential DoS Condition",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0,
+      "KEV": false,
+      "RCE": false,
+      "DOS": true,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-5qcv-4rpc-jp93",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "kafka-clients",
+      "Installed": "3.7.2",
+      "FixedIn": [
+        "3.9.2"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-5qcv-4rpc-jp93"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:N"
+      ],
+      "Description": "Apache Kafka Clients: Kafka Producer Message Corruption and Misrouting via Buffer Pool Race Condition",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.24724,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-xxqh-mfjm-7mv9",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "netty-codec-http",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.133.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-xxqh-mfjm-7mv9"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:N/I:L/A:N"
+      ],
+      "Description": "Netty HTTP/1.0 TE+CL Coexistence Bypasses Smuggling Sanitization",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.40019,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-w9fj-cfpg-grvv",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "netty-codec-http2",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.132.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-w9fj-cfpg-grvv"
+      ],
+      "CVSS": [],
+      "Description": "Netty HTTP/2 CONTINUATION Frame Flood DoS via Zero-Byte Frame Bypass",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.62328,
+      "KEV": false,
+      "RCE": false,
+      "DOS": true,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-w573-9ffj-6ff9",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "netty-transport-native-epoll",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.135.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-w573-9ffj-6ff9"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      ],
+      "Description": "Netty: Unix-socket fd receive leaks descriptors when peer sends two at once",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.03375,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-3qp7-7mw8-wx86",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "netty-handler",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.135.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-3qp7-7mw8-wx86"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H"
+      ],
+      "Description": "Netty has an IPv6 Subnet Filter Bypass via Incorrect Comparator Masking",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.42051,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-563x-q5rq-57qp",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "tomcat-embed-core",
+      "Installed": "10.1.44",
+      "FixedIn": [
+        "10.1.52"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-563x-q5rq-57qp"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+      ],
+      "Description": "Apache Tomcat has an HTTP Request/Response Smuggling vulnerability",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.36257,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-pvp8-3xj6-8c6x",
+      "Namespace": "github:language:java",
+      "Severity": "Low",
+      "Type": "java-archive",
+      "Package": "commons-configuration",
+      "Installed": "1.10",
+      "FixedIn": [],
+      "FixState": "not-fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-pvp8-3xj6-8c6x"
+      ],
+      "CVSS": [],
+      "Description": "Apache Commons Configuration Uncontrolled Resource Consumption",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.73846,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-fv25-8xcx-gqjc",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "tomcat-embed-core",
+      "Installed": "10.1.44",
+      "FixedIn": [
+        "10.1.55"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-fv25-8xcx-gqjc"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:L"
+      ],
+      "Description": "Apache Tomcat - WebSocket authentication header exposure",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.41858,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-wwpq-f5c3-7hvx",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "spring-boot",
+      "Installed": "3.3.11",
+      "FixedIn": [],
+      "FixState": "not-fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-wwpq-f5c3-7hvx"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H"
+      ],
+      "Description": "Spring Boot accepts predictable temp directory without ownership verification",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.03374,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-mf92-479x-3373",
+      "Namespace": "github:language:java",
+      "Severity": "Critical",
+      "Type": "java-archive",
+      "Package": "spring-security-web",
+      "Installed": "6.3.9",
+      "FixedIn": [],
+      "FixState": "not-fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-mf92-479x-3373"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+      ],
+      "Description": "Spring Security HTTP Headers Are not Written Under Some Conditions",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.37993,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-5m62-pw8w-7w9f",
+      "Namespace": "github:language:java",
+      "Severity": "Critical",
+      "Type": "java-archive",
+      "Package": "tomcat-embed-core",
+      "Installed": "10.1.44",
+      "FixedIn": [
+        "10.1.55"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-5m62-pw8w-7w9f"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+      ],
+      "Description": "Apache Tomcat - Security constraints not correctly applied",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.62615,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-9m3c-qcxr-9x87",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "tomcat-embed-core",
+      "Installed": "10.1.44",
+      "FixedIn": [
+        "10.1.53"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-9m3c-qcxr-9x87"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+      ],
+      "Description": "Apache Tomcat has an Open Redirect vulnerability",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.40649,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-f6hv-jmp6-3vwv",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "netty-codec-http",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.133.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-f6hv-jmp6-3vwv"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      ],
+      "Description": "Netty: HttpContentDecompressor maxAllocation bypass when Content-Encoding set to br/zstd/snappy leads to decompression bomb DoS",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.50383,
+      "KEV": false,
+      "RCE": false,
+      "DOS": true,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-v8h7-rr48-vmmv",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "netty-codec-http",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.133.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-v8h7-rr48-vmmv"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+      ],
+      "Description": "Netty: Start-Line Injection in DefaultHttpRequest.setUri() Allows HTTP Request Smuggling and RTSP Request Injection",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.22421,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-c2gf-v879-257j",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "netty-codec-http2",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.135.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-c2gf-v879-257j"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      ],
+      "Description": "netty-codec-http2: ByteBuf Reference-Count Leak in DelegatingDecompressorFrameListener Leads to Memory Exhaustion",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.43388,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-xmv7-r254-6q78",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "netty-resolver-dns",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.135.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-xmv7-r254-6q78"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:N/I:H/A:N"
+      ],
+      "Description": "Netty: DNS Cache Poisoning due to Predictable PRNG and Default Static Source Port",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.16908,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-6p4f-wcwh-5vvm",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "spring-webflux",
+      "Installed": "6.1.19",
+      "FixedIn": [],
+      "FixState": "not-fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-6p4f-wcwh-5vvm"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      ],
+      "Description": "Spring MVC and WebFlux applications are vulnerable to Denial of Service attacks when resolving static resources",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.26045,
+      "KEV": false,
+      "RCE": false,
+      "DOS": true,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-rv64-5gf8-9qq8",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "tomcat-embed-core",
+      "Installed": "10.1.44",
+      "FixedIn": [
+        "10.1.54"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-rv64-5gf8-9qq8"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+      ],
+      "Description": "Apache Tomcat has an Improper Encoding or Escaping of Output vulnerability in the JsonAccessLogValve",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.36763,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-4g9r-vxhx-9pgx",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "commons-compress",
+      "Installed": "1.22",
+      "FixedIn": [
+        "1.26.0"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-4g9r-vxhx-9pgx"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:L/AC:H/PR:N/UI:N/S:C/C:N/I:N/A:H"
+      ],
+      "Description": "Apache Commons Compress: Denial of service caused by an infinite loop for a corrupted DUMP file",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.35424,
+      "KEV": false,
+      "RCE": false,
+      "DOS": true,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-rmj7-2vxq-3g9f",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "jackson-databind",
+      "Installed": "2.17.3",
+      "FixedIn": [
+        "2.18.8"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-rmj7-2vxq-3g9f"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H"
+      ],
+      "Description": "jackson-databind has an array subtype allowlist bypass in BasicPolymorphicTypeValidator (allowIfSubTypeIsArray)",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.47771,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-prj3-ccx8-p6x4",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "netty-codec-http2",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.124.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-prj3-ccx8-p6x4"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      ],
+      "Description": "Netty affected by MadeYouReset HTTP/2 DDoS vulnerability",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.57883,
+      "KEV": false,
+      "RCE": false,
+      "DOS": true,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-xvfq-4q6q-gxx7",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "spring-kafka",
+      "Installed": "3.2.8",
+      "FixedIn": [],
+      "FixState": "not-fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-xvfq-4q6q-gxx7"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
+      ],
+      "Description": "In Spring for Apache Kafka, unbounded delegate cache keyed on user-controlled, potentially malicious selector header",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.20711,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-5843-p793-ghmm",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "spring-webflux",
+      "Installed": "6.1.19",
+      "FixedIn": [],
+      "FixState": "not-fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-5843-p793-ghmm"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
+      ],
+      "Description": "Spring Framework DoS with Multipart Temp Files in WebFlux",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.26373,
+      "KEV": false,
+      "RCE": false,
+      "DOS": true,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-wg35-8jpf-2xv3",
+      "Namespace": "github:language:java",
+      "Severity": "Low",
+      "Type": "java-archive",
+      "Package": "spring-webflux",
+      "Installed": "6.1.19",
+      "FixedIn": [],
+      "FixState": "not-fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-wg35-8jpf-2xv3"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:N/A:L"
+      ],
+      "Description": "Spring MVC and WebFlux applications are vulnerable to cache poisoning when resolving static resources.",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.14491,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-9m89-8frq-c98c",
+      "Namespace": "github:language:java",
+      "Severity": "Low",
+      "Type": "java-archive",
+      "Package": "tomcat-embed-core",
+      "Installed": "10.1.44",
+      "FixedIn": [
+        "10.1.55"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-9m89-8frq-c98c"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N"
+      ],
+      "Description": "Apache Tomcat - AJP secret compared in non-constant time",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.27169,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-mj4r-2hfc-f8p6",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "netty-codec",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.133.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-mj4r-2hfc-f8p6"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      ],
+      "Description": "Netty Lz4FrameDecoder is vulnerable to resource exhaustion",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.34461,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-84h7-rjj3-6jx4",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "netty-codec-http",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.129.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-84h7-rjj3-6jx4"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+      ],
+      "Description": "Netty has a CRLF Injection vulnerability in io.netty.handler.codec.http.HttpRequestEncoder",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.20998,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-fghv-69vj-qj49",
+      "Namespace": "github:language:java",
+      "Severity": "Low",
+      "Type": "java-archive",
+      "Package": "netty-codec-http",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.125.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-fghv-69vj-qj49"
+      ],
+      "CVSS": [],
+      "Description": "Netty vulnerable to request smuggling due to incorrect parsing of chunk extensions",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.45829,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-m4cv-j2px-7723",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "netty-codec-http",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.133.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-m4cv-j2px-7723"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:L"
+      ],
+      "Description": "Netty vulnerable to HTTP Request Smuggling due to incorrect chunk size parsing",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.28438,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-pwqr-wmgm-9rr8",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "netty-codec-http",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.132.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-pwqr-wmgm-9rr8"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+      ],
+      "Description": "Netty: HTTP Request Smuggling via Chunked Extension Quoted-String Parsing",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.46223,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-45q3-82m4-75jr",
+      "Namespace": "github:language:java",
+      "Severity": "Low",
+      "Type": "java-archive",
+      "Package": "netty-handler-proxy",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.133.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-45q3-82m4-75jr"
+      ],
+      "CVSS": [],
+      "Description": "Netty has HTTP Header Injection via HttpProxyHandler Disabled Validation (Incomplete Fix CVE-2025-67735)",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.4735,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-676x-f7gg-47vc",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "netty-resolver-dns",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.135.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-676x-f7gg-47vc"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:N"
+      ],
+      "Description": "Netty Vulnerable to DNS Cache Poisoning via Missing Bailiwick Checks in CNAME Records",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.12194,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-xq69-5h5v-x9x4",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "spring-kafka",
+      "Installed": "3.2.8",
+      "FixedIn": [],
+      "FixState": "not-fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-xq69-5h5v-x9x4"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H"
+      ],
+      "Description": "In Spring for Apache Kafka, overly broad trusted-package matching in header mappers exposes JDK classes to deserialization",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.3854,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-xwmg-2g98-w7v9",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "nimbus-jose-jwt",
+      "Installed": "9.37.3",
+      "FixedIn": [
+        "9.37.4"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-xwmg-2g98-w7v9"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:N/I:N/A:L"
+      ],
+      "Description": "Nimbus JOSE + JWT is vulnerable to DoS attacks when processing deeply nested JSON",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.52308,
+      "KEV": false,
+      "RCE": false,
+      "DOS": true,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-5jmj-h7xm-6q6v",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "jackson-databind",
+      "Installed": "2.17.3",
+      "FixedIn": [],
+      "FixState": "not-fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-5jmj-h7xm-6q6v"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+      ],
+      "Description": "jackson-databind has case-insensitive deserialization bypasses per-property @JsonIgnoreProperties",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.26479,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-j3rv-43j4-c7qm",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "jackson-databind",
+      "Installed": "2.17.3",
+      "FixedIn": [
+        "2.18.8"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-j3rv-43j4-c7qm"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H"
+      ],
+      "Description": "jackson-databind has a PolymorphicTypeValidator bypass via generic type parameters that allows arbitrary class instantiation",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.452,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-445c-vh5m-36rj",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "log4j-core",
+      "Installed": "2.24.3",
+      "FixedIn": [
+        "2.25.4"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-445c-vh5m-36rj"
+      ],
+      "CVSS": [],
+      "Description": "Apache Log4j Core: log injection in `Rfc5424Layout` due to silent configuration incompatibility",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.53094,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-5x3r-wrvg-rp6q",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "netty-codec-http2",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.135.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-5x3r-wrvg-rp6q"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      ],
+      "Description": "Netty HTTP/2: Advertised MAX_CONCURRENT_STREAMS are not enforced",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.20917,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-6r3c-xf4w-jxjm",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "spring-web",
+      "Installed": "6.1.19",
+      "FixedIn": [
+        "6.1.21"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-6r3c-xf4w-jxjm"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:L/UI:R/S:C/C:H/I:L/A:N"
+      ],
+      "Description": "Spring Framework vulnerable to a reflected file download (RFD)",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.41059,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-6p4f-wcwh-5vvm",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "spring-webmvc",
+      "Installed": "6.1.19",
+      "FixedIn": [],
+      "FixState": "not-fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-6p4f-wcwh-5vvm"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      ],
+      "Description": "Spring MVC and WebFlux applications are vulnerable to Denial of Service attacks when resolving static resources",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.26045,
+      "KEV": false,
+      "RCE": false,
+      "DOS": true,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-vc5p-v9hr-52mj",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "log4j-core",
+      "Installed": "2.24.3",
+      "FixedIn": [
+        "2.25.3"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-vc5p-v9hr-52mj"
+      ],
+      "CVSS": [],
+      "Description": "Apache Log4j does not verify the TLS hostname in its Socket Appender",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.50215,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-38f8-5428-x5cv",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "netty-codec-http",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.133.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-38f8-5428-x5cv"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+      ],
+      "Description": "Netty vulnerable to HTTP Request Smuggling due to malformed Transfer-Encoding",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.15987,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-98qh-xjc8-98pq",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "postgresql",
+      "Installed": "42.7.7",
+      "FixedIn": [
+        "42.7.11"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-98qh-xjc8-98pq"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      ],
+      "Description": "pgjdbc: Unbounded PBKDF2 iterations in SCRAM authentication allows CPU exhaustion DoS",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.51093,
+      "KEV": false,
+      "RCE": false,
+      "DOS": true,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-4wp7-92pw-q264",
+      "Namespace": "github:language:java",
+      "Severity": "Low",
+      "Type": "java-archive",
+      "Package": "spring-context",
+      "Installed": "6.1.19",
+      "FixedIn": [
+        "6.1.20"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-4wp7-92pw-q264"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:L/A:N"
+      ],
+      "Description": "Spring Framework DataBinder Case Sensitive Match Exception",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.27058,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-6hcq-hmm3-jj3c",
+      "Namespace": "github:language:java",
+      "Severity": "Low",
+      "Type": "java-archive",
+      "Package": "spring-webmvc",
+      "Installed": "6.1.19",
+      "FixedIn": [],
+      "FixState": "not-fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-6hcq-hmm3-jj3c"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:L/UI:R/S:U/C:N/I:L/A:N"
+      ],
+      "Description": "Spring MVC and WebFlux has Server Sent Event stream corruption",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.01665,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-fpj8-gq4v-p354",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "tomcat-embed-core",
+      "Installed": "10.1.44",
+      "FixedIn": [
+        "10.1.50"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-fpj8-gq4v-p354"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+      ],
+      "Description": "Apache Tomcat - Client certificate verification bypass",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.14411,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-gx5v-xp9w-j4cg",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "tomcat-embed-core",
+      "Installed": "10.1.44",
+      "FixedIn": [
+        "10.1.55"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-gx5v-xp9w-j4cg"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      ],
+      "Description": "Apache Tomcat: Unbounded read in WebDAV LOCK and  PROPFIND handling",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.51438,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-3p8m-j85q-pgmj",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "netty-codec",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.125.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-3p8m-j85q-pgmj"
+      ],
+      "CVSS": [],
+      "Description": "Netty's decoders vulnerable to DoS via zip bomb style attack",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.42518,
+      "KEV": false,
+      "RCE": false,
+      "DOS": true,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-cvc6-q2cp-2xhw",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "spring-security-oauth2-jose",
+      "Installed": "6.3.9",
+      "FixedIn": [],
+      "FixState": "not-fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-cvc6-q2cp-2xhw"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:H/A:N"
+      ],
+      "Description": "Spring Security has Potential Security Misconfiguration when Using withIssuerLocation",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.10318,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-293q-567p-wmwq",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "spring-security-web",
+      "Installed": "6.3.9",
+      "FixedIn": [],
+      "FixState": "not-fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-293q-567p-wmwq"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:N"
+      ],
+      "Description": "Spring Security Vulnerable to Unauthorized User Impersonation when Using X.509 Client Certificates",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.01884,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-4773-3jfm-qmx3",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "spring-webmvc",
+      "Installed": "6.1.19",
+      "FixedIn": [],
+      "FixState": "not-fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-4773-3jfm-qmx3"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N"
+      ],
+      "Description": "Spring Framework Improper Path Limitation with Script View Templates",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.30461,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-563q-j3cm-6jxm",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "netty-codec-http2",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.135.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-563q-j3cm-6jxm"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      ],
+      "Description": "Netty susceptible to HTTP/2 Reset Attack with different on-the-wire signature",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.21873,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-4773-3jfm-qmx3",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "spring-webflux",
+      "Installed": "6.1.19",
+      "FixedIn": [],
+      "FixState": "not-fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-4773-3jfm-qmx3"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N"
+      ],
+      "Description": "Spring Framework Improper Path Limitation with Script View Templates",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.30461,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-6hcq-hmm3-jj3c",
+      "Namespace": "github:language:java",
+      "Severity": "Low",
+      "Type": "java-archive",
+      "Package": "spring-webflux",
+      "Installed": "6.1.19",
+      "FixedIn": [],
+      "FixState": "not-fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-6hcq-hmm3-jj3c"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:L/UI:R/S:U/C:N/I:L/A:N"
+      ],
+      "Description": "Spring MVC and WebFlux has Server Sent Event stream corruption",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.01665,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-h6fc-48rj-7qqh",
+      "Namespace": "github:language:java",
+      "Severity": "Critical",
+      "Type": "java-archive",
+      "Package": "tomcat-embed-core",
+      "Installed": "10.1.44",
+      "FixedIn": [
+        "10.1.55"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-h6fc-48rj-7qqh"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+      ],
+      "Description": "Apache Tomcat - Digest authenticator will authenticate any unknown user",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.65379,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-574f-3g2m-x479",
+      "Namespace": "github:language:java",
+      "Severity": "Critical",
+      "Type": "java-archive",
+      "Package": "bcprov-jdk18on",
+      "Installed": "1.80",
+      "FixedIn": [
+        "1.80.2"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-574f-3g2m-x479"
+      ],
+      "CVSS": [],
+      "Description": "Bouncy Castle for Java GOST 28147 CTR mode reuses keystream after 255 blocks",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.23117,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-3pxv-7cmr-fjr4",
+      "Namespace": "github:language:java",
+      "Severity": "Medium",
+      "Type": "java-archive",
+      "Package": "log4j-core",
+      "Installed": "2.24.3",
+      "FixedIn": [
+        "2.25.4"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-3pxv-7cmr-fjr4"
+      ],
+      "CVSS": [],
+      "Description": "Apache Log4j Core: Silent log event loss in XmlLayout due to unescaped XML 1.0 forbidden characters",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.54052,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-x4gw-5cx5-pgmh",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "netty-handler",
+      "Installed": "4.1.119.Final",
+      "FixedIn": [
+        "4.1.135.Final"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-x4gw-5cx5-pgmh"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      ],
+      "Description": "Netty: SNI handler pre-allocates up to 16 MiB from nine attacker bytes",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.36729,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-jmp9-x22r-554x",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "spring-core",
+      "Installed": "6.1.19",
+      "FixedIn": [],
+      "FixState": "not-fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-jmp9-x22r-554x"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+      ],
+      "Description": "Spring Framework annotation detection mechanism may result in improper authorization",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.36649,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-wg35-8jpf-2xv3",
+      "Namespace": "github:language:java",
+      "Severity": "Low",
+      "Type": "java-archive",
+      "Package": "spring-webmvc",
+      "Installed": "6.1.19",
+      "FixedIn": [],
+      "FixState": "not-fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-wg35-8jpf-2xv3"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:N/A:L"
+      ],
+      "Description": "Spring MVC and WebFlux applications are vulnerable to cache poisoning when resolving static resources.",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.14491,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    },
+    {
+      "ID": "GHSA-wmwf-9ccg-fff5",
+      "Namespace": "github:language:java",
+      "Severity": "High",
+      "Type": "java-archive",
+      "Package": "tomcat-embed-core",
+      "Installed": "10.1.44",
+      "FixedIn": [
+        "10.1.45"
+      ],
+      "FixState": "fixed",
+      "URLs": [
+        "https://github.com/advisories/GHSA-wmwf-9ccg-fff5"
+      ],
+      "CVSS": [
+        "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H"
+      ],
+      "Description": "Apache Tomcat Vulnerable to Relative Path Traversal",
+      "LayerIDs": [
+        "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa"
+      ],
+      "EPSS": 0.99191,
+      "KEV": false,
+      "RCE": false,
+      "DOS": false,
+      "Exploit": false,
+      "ExploitReferenceURL": ""
+    }
+  ],
+  "Layers": [
+    "sha256:d1109d5c8c29239cc320c51aa1e70dd4ee3864d2838c06c2f7af81ae96ecc1aa",
+    "sha256:342139084790060c11b057dcd3dd48f0a289c553d6cc8249e764c6d5f173fd68",
+    "sha256:e27d9d58e09efb1fb41ac6e00342e69bba7dd9bd022726fbcc6037599a16a7a3",
+    "sha256:4faf0615ad6eaab3c9a5343c73a8cf26f276cea1c366351e4fb69e64885397a5"
+  ],
+  "History": [
+    {
+      "Created": "2026-02-02T10:23:04.52134725Z",
+      "Created_By": "COPY / / # buildkit",
+      "Comment": "buildkit.dockerfile.v0"
+    },
+    {
+      "Created": "2026-02-02T10:23:05.95282707Z",
+      "Created_By": "ENV LANG=en_US.UTF-8",
+      "Comment": "buildkit.dockerfile.v0",
+      "Empty_Layer": true
+    },
+    {
+      "Created": "2026-02-02T10:23:05.95282707Z",
+      "Created_By": "ENV LANGUAGE=en_US:en",
+      "Comment": "buildkit.dockerfile.v0",
+      "Empty_Layer": true
+    },
+    {
+      "Created": "2026-02-02T10:23:05.95282707Z",
+      "Created_By": "ENV LC_ALL=en_US.UTF-8",
+      "Comment": "buildkit.dockerfile.v0",
+      "Empty_Layer": true
+    },
+    {
+      "Created": "2026-02-02T10:23:05.95282707Z",
+      "Created_By": "ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en",
+      "Comment": "buildkit.dockerfile.v0",
+      "Empty_Layer": true
+    },
+    {
+      "Created": "2026-02-02T10:23:05.95282707Z",
+      "Created_By": "ARG LIBERICA_VERSION=17.0.2",
+      "Comment": "buildkit.dockerfile.v0",
+      "Empty_Layer": true
+    },
+    {
+      "Created": "2026-02-02T10:23:05.95282707Z",
+      "Created_By": "ARG LIBERICA_ROOT=/usr/lib/jvm/jre_17.0.2",
+      "Comment": "buildkit.dockerfile.v0",
+      "Empty_Layer": true
+    },
+    {
+      "Created": "2026-02-02T10:23:05.95282707Z",
+      "Created_By": "ARG LIBERICA_ARCH=amd64",
+      "Comment": "buildkit.dockerfile.v0",
+      "Empty_Layer": true
+    },
+    {
+      "Created": "2026-02-02T10:23:05.95282707Z",
+      "Created_By": "ENV JAVA_HOME=/usr/lib/jvm/jre_17.0.12 PATH=/usr/lib/jvm/jre_17.0.12/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "Comment": "buildkit.dockerfile.v0",
+      "Empty_Layer": true
+    },
+    {
+      "Created": "2026-02-02T10:23:05.95282707Z",
+      "Created_By": "USER astra:astra",
+      "Comment": "buildkit.dockerfile.v0",
+      "Empty_Layer": true
+    },
+    {
+      "Created": "2026-02-02T10:23:05.95282707Z",
+      "Created_By": "VOLUME [/tmp]",
+      "Comment": "buildkit.dockerfile.v0",
+      "Empty_Layer": true
+    },
+    {
+      "Created": "2026-02-02T10:23:05.95282707Z",
+      "Created_By": "COPY versions-info.json /opt/diasoft/info/versions-info.json # buildkit",
+      "Comment": "buildkit.dockerfile.v0"
+    },
+    {
+      "Created": "2026-02-02T10:23:06.02757557Z",
+      "Created_By": "COPY service/src/main/resources/microserviceinfo/microservice_info.json /opt/diasoft/info/microservice_info.json # buildkit",
+      "Comment": "buildkit.dockerfile.v0"
+    },
+    {
+      "Created": "2026-02-02T13:23:53.716683844+03:00",
+      "Created_By": "COPY sign localized-image-name.txt / # buildkit",
+      "Comment": "buildkit.dockerfile.v0"
+    }
+  ]
+}
