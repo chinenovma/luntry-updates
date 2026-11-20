@@ -1,16 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# ==========================================
-# Настройки
-# ==========================================
 OUTPUT_FILE="sec-admin-clusterrole.yaml"
-SEC_ADMIN_GROUP="${1:-sec-admin}"  # Можно передать имя группы первым аргументом
+SEC_ADMIN_GROUP="${1:-sec-admin}"  # Передать имя AD группы для RoleBinding
 
-echo "🚀 Начинаем генерацию ClusterRole для группы: $SEC_ADMIN_GROUP"
+echo "Генерация ClusterRole для группы: $SEC_ADMIN_GROUP"
 
 # ==========================================
-# 1. Сбор всех API групп и ресурсов (кроме secrets)
+# 1. Сбор всех API групп и ресурсов исключая secrets
 # ==========================================
 # Получаем список всех ресурсов в формате: группированное_имя.версия/название_ресурса
 # Исключаем secrets, а также служебные/опасные ресурсы, если нужно.
@@ -21,7 +18,7 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 # Получаем все apiGroups, в которых есть ресурсы
 kubectl api-resources --verbs=list --namespaced -o wide | awk 'NR>1 {print $3}' | sort -u > "$TMP_DIR/apigroups.txt"
 
-# Формируем YAML вручную
+# Формируем ClusterRole 
 cat > "$OUTPUT_FILE" <<EOF
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -74,7 +71,7 @@ while IFS= read -r apigroup; do
 done < "$TMP_DIR/apigroups.txt"
 
 # ==========================================
-# 3. Добавление ClusterRoleBinding (опционально)
+# 3. Добавление ClusterRoleBinding
 # ==========================================
 cat >> "$OUTPUT_FILE" <<EOF
 ---
@@ -92,5 +89,5 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 EOF
 
-echo "✅ Готово! Файл $OUTPUT_FILE сгенерирован."
-echo "⚠️  Проверьте содержимое файла перед применением: kubectl apply -f $OUTPUT_FILE"
+echo "Готово! Файл $OUTPUT_FILE сгенерирован."
+echo "Требуется проверить права перед применением: kubectl apply -f $OUTPUT_FILE"
